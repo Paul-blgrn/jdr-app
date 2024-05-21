@@ -1,5 +1,4 @@
 ## The project
-![bdd_shema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/3ead31ff-f0b5-4694-a4ba-563b2306638b)
 ![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/3380fd9a-63bb-44c9-b4b9-7c8b1eb5f8b5)
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
