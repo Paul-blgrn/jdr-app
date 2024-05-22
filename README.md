@@ -4,6 +4,8 @@
 # Entity Relation Diagramm (ERD)
 ![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/d3e3114f-2e82-44b6-bfc5-773e2c8e2a46)
 
+<hr />
+
 # The Framework
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1549,6 +1551,6 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-<hr />
+<br />
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 </p>
