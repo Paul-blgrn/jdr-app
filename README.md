@@ -1,5 +1,6 @@
 # The Database
-![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/3380fd9a-63bb-44c9-b4b9-7c8b1eb5f8b5)
+![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/3f11648d-a90b-413f-a4db-aa0be63c1a4f)
+
 
 # The Project
 <p align="center">Coming soon...</p>
