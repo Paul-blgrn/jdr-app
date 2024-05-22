@@ -29,15 +29,7 @@ it("sent a 404 error when accessing a board that do not exist", function () {
     ->assertStatus(404);
 });
 
-// it("redirect users who tried to access boards without invite code", function () {
-//     $user = User::factory()->create();
-
-//     $response = $this->actingAs($user)->get("/tables/{code}");
-
-// });
-
 it("can display one specific board", function () {
-    //withoutExceptionHandling();
 
     $user = User::factory()->create();
     $board = Board::factory()->create();
@@ -45,5 +37,19 @@ it("can display one specific board", function () {
     $this->actingAs($user);
 
     get("/board/{$board->id}")
+        ->assertOk()
+        ->assertSee($board->name)
+        ->assertSee($board->description)
+        ->assertSee($board->capacity)
+        ->assertSee($board->code);
+});
+
+it("cannot join boards without invite code", function () {
+    $user = User::factory()->create();
+    $board = Board::factory()->create();
+
+    $this->actingAs($user);
+
+    get("/boards/join/")
         ->assertOk();
 });

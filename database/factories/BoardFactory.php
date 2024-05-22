@@ -20,7 +20,7 @@ class BoardFactory extends Factory
             'name' => $this->faker->words(3, true),
             'description' => $this->faker->sentence(),
             'capacity' => $this->faker->numberBetween(2,10),
-            'invitation_code' => $this->faker->word(),
+            'code' => $this->faker->word(),
         ];
     }
 }

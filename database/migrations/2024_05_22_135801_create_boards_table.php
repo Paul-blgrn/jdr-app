@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->integer('capacity')->default(2);
-            $table->string('invitation_code');
+            $table->string('code');
             $table->timestamps();
         });
     }

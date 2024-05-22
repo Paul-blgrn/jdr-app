@@ -20,7 +20,8 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/boards', [BoardController::class, 'index']);
-    Route::get('/board/{board}', [BoardController::class, 'index']);
+    Route::get('/board/{board}', [BoardController::class, 'show']);
+    Route::get('/boards/join/', [BoardController::class, 'join']);
 });
 
 require __DIR__.'/auth.php';
