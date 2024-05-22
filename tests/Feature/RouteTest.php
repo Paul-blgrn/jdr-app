@@ -16,7 +16,7 @@ it('show login page', function () {
     ->assertStatus(200);
 });
 
-it('show user tables', function () {
-    $this->get('/tables')
-    ->assertStatus(200);
+it('rerirect when guests try to see boards', function () {
+    $this->get('/boards')
+    ->assertRedirect('/login');
 });
