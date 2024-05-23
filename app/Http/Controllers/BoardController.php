@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BoardController extends Controller
@@ -36,21 +37,6 @@ class BoardController extends Controller
         //$board->load("");
         //return view("boards.show", compact("board"));
         return $board;
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function join(Request $request, Board $board) {
-
-        $rules = [
-            
-        ];
-        // $code = Board::findOrFail( $board->id );
-
-        // $code->invitation_code = $request->input('code');
-
-        // return $code_board;
     }
 
     /**

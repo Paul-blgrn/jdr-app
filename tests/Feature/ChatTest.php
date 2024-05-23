@@ -2,9 +2,9 @@
 
 it("can add message", function () {
 
-})->skip();
+})->todo();
 
 
 it("can see messages", function () {
 
-})->skip();
+})->todo();

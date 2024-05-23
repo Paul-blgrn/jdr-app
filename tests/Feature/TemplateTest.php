@@ -2,12 +2,12 @@
 
 it("can create template", function () {
 
-})->skip();
+})->todo();
 
 it("can edit template", function () {
 
-})->skip();
+})->todo();
 
 it("can delete template", function () {
 
-})->skip();
+})->todo();

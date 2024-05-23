@@ -2,20 +2,20 @@
 
 it("can create log", function () {
 
-})->skip();
+})->todo();
 
 it("can delete log", function () {
 
-})->skip();
+})->todo();
 
 it("can show all logs", function () {
 
-})->skip();
+})->todo();
 
 it("can show a log", function () {
 
-})->skip();
+})->todo();
 
 it("can show a specific log", function () {
 
-})->skip();
+})->todo();

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\BoardPlayerController;
 use Illuminate\Support\Facades\Auth;
 
 if(app()->environment() === 'local') {
@@ -19,5 +20,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/boards', [BoardController::class, 'index']);
     Route::get('/board/{board}', [BoardController::class, 'show']);
 
-    Route::post('/boards/join', [BoardController::class, 'join']);
+    Route::post('/boards/join', [BoardPlayerController::class, 'store']);
 });

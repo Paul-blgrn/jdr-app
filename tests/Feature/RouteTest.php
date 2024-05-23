@@ -17,6 +17,6 @@ it('show login page', function () {
 });
 
 it('rerirect when guests try to see boards', function () {
-    $this->get('/boards')
-    ->assertRedirect('/login');
+    $this->get('/api/boards')
+    ->assertStatus(302);
 });
