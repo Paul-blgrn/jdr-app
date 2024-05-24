@@ -59,18 +59,16 @@ test("player can join a board with right code", function () {
 });
 
 it("can't join boards without code", function () {
-    withoutExceptionHandling();
 
     $user = User::factory()->create();
-    $board = Board::factory()->create();
 
     $this->actingAs($user)
         ->post("/api/boards/join",
             [
-                "code" => null,
+                "code" => null || "",
             ])
         ->assertStatus(302);
-})->todo();
+});
 
 it("can't join boards with wrong invite code", function () {
     $user = User::factory()->create();
