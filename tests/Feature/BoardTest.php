@@ -45,8 +45,6 @@ it("can display one specific board", function () {
 });
 
 test("player can join a board with right code", function () {
-    withoutExceptionHandling();
-
     $user = User::factory()->create();
     $board = Board::factory()->create();
 
@@ -56,32 +54,31 @@ test("player can join a board with right code", function () {
                 "code" => $board->code,
             ])
         ->assertStatus(201);
+
+        expect($user->boards)->toHaveCount(1);
+        expect($user->boards->contains($board))->toBeTrue();
 });
 
-it("can't join boards without code", function () {
 
+
+it("can't join boards with wrong or empty invite code", function (string $code) {
     $user = User::factory()->create();
 
-    $this->actingAs($user)
-        ->post("/api/boards/join",
-            [
-                "code" => null || "",
-            ])
-        ->assertStatus(302);
-});
+    $this->actingAs($user)->post("/api/boards/join",
+        [
+            "code"=> $code,
+        ])
+    ->assertStatus(404);
 
-it("can't join boards with wrong invite code", function () {
+    expect($user->boards)->toHaveCount(0);
+})->with(["12345", "bonjour", ""]);
+
+
+
+it("can create board", function () {
     $user = User::factory()->create();
     $board = Board::factory()->create();
-    $fakeCode = "1234";
-
-    $this->actingAs($user)
-        ->post("/api/boards/join",
-            [
-                "code" => $fakeCode,
-            ]);
-    expect($board->code)->not()->toEqual($fakeCode);
-});
+})->todo();
 
 test("the creator of board have role master", function () {
 

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('board_user', function (Blueprint $table) {
             $table->id();
-            $table->enum('role', ['master','player'])->default('player');
             $table->foreignId('board_id');
             $table->foreignId('user_id');
+            $table->enum('role', ['master','player'])->default('player');
         });
     }
 

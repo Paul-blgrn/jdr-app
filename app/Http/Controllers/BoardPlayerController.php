@@ -6,6 +6,8 @@ use App\Models\Board;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class BoardPlayerController extends Controller
 {
@@ -30,22 +32,15 @@ class BoardPlayerController extends Controller
      */
     public function store(Request $request)
     {
-
         // actual authenticated user
-        $user = auth()->user();
-        // return new JsonResponse($user, JsonResponse::HTTP_FORBIDDEN);
+        $userID = auth()->user()->getAuthIdentifier();
 
-        $request->validate([
-            'code' => 'bail | required | string',
-        ]);
+        // $board = Board::where('code', $request->code)->first();
+        $board = Board::where('code', '=', $request->code)->firstOrFail();
 
-        // select * from boards where 'code' => $request->code;
-        $board = Board::where('code', $request->code)->first();
-        //$player = User::where('id', $user->id)->first();
+        $board->users()->attach($userID, ["role" => "player"]);
 
-        $board->users()->attach($user->id, ["role" => "player"]);
         return new JsonResponse($board, JsonResponse::HTTP_CREATED);
-
 
     }
 
