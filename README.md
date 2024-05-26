@@ -2,7 +2,7 @@
 <p align="center">Coming soon...</p>
 
 # Entity Relation Diagramm (ERD)
-![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/d3e3114f-2e82-44b6-bfc5-773e2c8e2a46)
+![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/9b68d15d-c192-4159-805c-30d5d78ebe20)
 
 <hr />
 
