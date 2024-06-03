@@ -15,10 +15,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware('auth')->group(function () {
-    // Boards
-    Route::get('/boards', [BoardController::class, 'index']);
-    Route::get('/board/{board}', [BoardController::class, 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    // show all joined boards to the player
+    Route::get('/boards', [BoardPlayerController::class, 'index']);
 
+    // Show player requested board
+    Route::get('/board/{board}', [BoardPlayerController::class, 'show']);
+
+    // New player Join a board
     Route::post('/boards/join', [BoardPlayerController::class, 'store']);
 });

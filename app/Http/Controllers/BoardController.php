@@ -13,7 +13,10 @@ class BoardController extends Controller
      * Display a listing of the resource.
      */
     public function index() {
-
+        $user = auth()->user();
+        if (!$user) {
+            return new JsonResponse("vous n'êtes pas connecté !", JsonResponse::HTTP_FORBIDDEN);
+        }
     }
 
     /**
