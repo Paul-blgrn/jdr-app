@@ -53,7 +53,10 @@ class User extends Authenticatable
         return $this->hasMany(Fiche::class);
     }
 
+    /**
+     * The boards that belong to the user.
+     */
     public function boards() {
-        return $this->belongsToMany(Board::class);
+        return $this->belongsToMany(Board::class)->withPivot('role');
     }
 }

@@ -9,7 +9,10 @@ class Board extends Model
 {
     use HasFactory;
 
+    /**
+     * The users that belong to the board.
+     */
     public function users() {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class)->withPivot('role');
     }
 }
