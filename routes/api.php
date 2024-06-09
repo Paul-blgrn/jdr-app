@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\BoardController;
-use App\Http\Controllers\BoardPlayerController;
+use App\Http\Controllers\PlayerBoardController;
 use Illuminate\Support\Facades\Auth;
 
 if(app()->environment() === 'local') {
@@ -16,12 +16,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    // show all joined boards to the player
-    Route::get('/boards', [BoardPlayerController::class, 'index']);
+    // Display all the user Boards
+    Route::get('/boards', [PlayerBoardController::class, 'index']);
 
-    // Show player requested board
-    Route::get('/board/{board}', [BoardPlayerController::class, 'show']);
+    // Display Board with details for user
+    Route::get('/board/{board}', [PlayerBoardController::class, 'show']);
 
-    // New player Join a board
-    Route::post('/boards/join', [BoardPlayerController::class, 'store']);
+    // Join a new Board
+    Route::post('/boards/join', [PlayerBoardController::class, 'store']);
+
+    // Leave a Board
+    Route::post('/board/leave/{board}', [PlayerBoardController::class,'destroy']);
 });
