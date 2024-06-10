@@ -64,6 +64,57 @@ it("cannot join boards with wrong or empty invite code", function (string $code)
 
 })->with(["12345", "bonjour", ""]);
 
+it('cannot join a full board', function () {
+    // Créer 1 utilisateur (master)
+    $user = User::factory()->create();
+    // Créer 3 utilisateurs (players)
+    $users = User::factory(3)->create();
+    // Créer un autre utilisateur
+    $userToJoin = User::factory()->create();
+
+    // Créer un Board avec une capacité de 4
+    $board = Board::factory()->create([
+        'name' => 'table pleine',
+        'description' => 'la table est pleine et doit exclure toute personne qui essaye de la rejoindre',
+        'code' => 'fulltable',
+        'capacity' => 4,
+    ]);
+
+    // Attacher les utilisateurs a la Board avec leur rôles
+    $board->users()->attach($user, ['role'=> 'master']);
+    $board->users()->attach($users, ['role'=> 'player']);
+
+    // Simuler la tentative de rejoindre le board par l'utilisateur
+    $this->actingAs($userToJoin)
+        ->post("/api/boards/join",
+            [
+                "code" => $board->code,
+            ])
+        ->assertStatus(403);
+
+    // Rafraîchir le modèle du board
+    $board->refresh();
+
+    // Vérifier le nombre d'utilisateurs sur le board n'a pas changé
+    expect($board->users)->toHaveCount(4);
+
+    // Vérifier que l'utilisateur qui a essayé de rejoindre n'est pas dans la table pivot
+    $this->assertDatabaseMissing('board_user', [
+        'board_id' => $board->id,
+        'user_id' => $userToJoin->id,
+    ]);
+
+    // Vérifier les rôles des utilisateurs sur le board
+    $board->users()->each(function (User $users) {
+        $role = $users->pivot->role;
+        if ($users->id == 1) {
+            expect($role)->toBe('master');
+        } else {
+            expect($role)->toBe('player');
+        }
+    });
+});
+
 it("displays all the user boards and does not send back other players boards", function () {
     // Créer un utilisateur et lui associer 3 Boards
     $user = User::factory()->hasAttached(Board::factory(3))->create();
@@ -104,29 +155,43 @@ it("displays all the user boards and does not send back other players boards", f
 });
 
 it('displays the information of all players associated with a board', function () {
-    $board = Board::factory()->hasAttached(User::factory(3))->create();
+    $users = User::factory(3)->create();
+    $board = Board::factory()->create();
+
+    $board->users()->attach($users[0]->id, ['role' => 'master']);
+    $board->users()->attach([$users[1]->id, $users[2]->id], ['role' => 'player']);
 
     $response = $this->actingAs($board->users->first())
         ->get('/api/board/'. $board->id)
         ->assertStatus(200);
 
     $data = $response->json();
-    //dd($data);
 
     // Vérifier que $data n'est pas vide
     expect($data)->not->toBeEmpty();
 
+
     // Vérifier que $data contient le bon nombre de users
-    //dd($data['users']);
-    expect($data['users'])->toHaveCount($board->users->count());
+    expect($data['users'])->toHaveCount(3);
 
-    // $board->users()->each(function (User $user) use ($data) {
-    //     $users = $data[0]['users'];
-    //     dd($users);
+    $pluckedData = collect($data['users'])->pluck('id')->toArray();
+    $pluckedUser = $board->users->pluck('id')->toArray();
+    // Vérifier les IDS
+    expect($pluckedData)->toEqual($pluckedUser);
 
-    // });
-    // expect($data[0]['users'][0]['name'])->toBe($board->users->first()->name);
-})->todo();
+    $userRoles = collect($data['users'])->mapWithKeys(function ($user) {
+        return [$user['id'] => $user['pivot']['role']];
+    });
+
+    expect($userRoles[$users[0]->id])->toBe('master');
+    expect($userRoles[$users[1]->id])->toBe('player');
+    expect($userRoles[$users[2]->id])->toBe('player');
+
+    foreach ($data['users'] as $userData) {
+        $originalUser = $users->firstWhere('id', $userData['id']);
+        expect($userData['name'])->toBe($originalUser->name);
+    }
+});
 
 it("displays a board with details", function () {
 
@@ -143,19 +208,26 @@ it("displays a board with details", function () {
     expect($data)->not->toBeEmpty();
 
     // Vérifier que $data contient le bon nombre de users
-    expect($data[0]['users'])->toHaveCount($board->users->count());
+    expect($data['users'])->toHaveCount(1);
+    // dd($data);
 
-    $pluckedData = collect($data)->pluck('id')->toArray();
+    $pluckedData = collect($data['users'])->pluck('id')->toArray();
     $pluckedUser = $user->boards->pluck('id')->toArray();
     // Vérifier les IDS
     expect($pluckedData)->toEqual($pluckedUser);
 
     // Vérifier que les détails du board sont corrects
-    expect($data[0]['name'])->toEqual($board->name);
-    expect($data[0]['description'])->toEqual($board->description);
-    expect($data[0]['capacity'])->toEqual($board->capacity);
-    expect($data[0]['users'][0]['name'])->toBe($board->users->first()->name);
-})->todo();
+    expect($data['name'])->toEqual($board->name);
+    expect($data['description'])->toEqual($board->description);
+    expect($data['capacity'])->toEqual($board->capacity);
+    //dd($data['users'][0]['name']);
+    foreach ($data['users'] as $userData) {
+        $originalUsers = $user->firstWhere('id', $userData['id']);
+        expect($userData['name'])->toBe($originalUsers->name);
+    }
+
+    //expect($data['users'][0]['name'])->toBe($board->users->first()->name);
+});
 
 it("can leave a board successfully", function () {
     // Créer 3 utilisateurs
@@ -189,7 +261,7 @@ it("can leave a board successfully", function () {
 
     // Vérifier que le Board à le bon nombre de users
     expect($board->users)->toHaveCount(2);
-})->todo();
+});
 
 it('can leave a board successfully if other users remain', function () {
     // Créer un utilisateur
@@ -303,55 +375,4 @@ it("cannot leave a board if user have role master", function () {
     // On attend qu'il reste 2 utilisateurs
     // car le role "master" ne peut pas quitter son board
     expect($board->users)->toHaveCount(2);
-});
-
-it('cannot join a full board', function () {
-    // Créer 1 utilisateur (master)
-    $user = User::factory()->create();
-    // Créer 3 utilisateurs (players)
-    $users = User::factory(3)->create();
-    // Créer un autre utilisateur
-    $userToJoin = User::factory()->create();
-
-    // Créer un Board avec une capacité de 4
-    $board = Board::factory()->create([
-        'name' => 'table pleine',
-        'description' => 'la table est pleine et doit exclure toute personne qui essaye de la rejoindre',
-        'code' => 'fulltable',
-        'capacity' => 4,
-    ]);
-
-    // Attacher les utilisateurs a la Board avec leur rôles
-    $board->users()->attach($user, ['role'=> 'master']);
-    $board->users()->attach($users, ['role'=> 'player']);
-
-    // Simuler la tentative de rejoindre le board par l'utilisateur
-    $this->actingAs($userToJoin)
-        ->post("/api/boards/join",
-            [
-                "code" => $board->code,
-            ])
-        ->assertStatus(403);
-
-    // Rafraîchir le modèle du board
-    $board->refresh();
-
-    // Vérifier le nombre d'utilisateurs sur le board n'a pas changé
-    expect($board->users)->toHaveCount(4);
-
-    // Vérifier que l'utilisateur qui a essayé de rejoindre n'est pas dans la table pivot
-    $this->assertDatabaseMissing('board_user', [
-        'board_id' => $board->id,
-        'user_id' => $userToJoin->id,
-    ]);
-
-    // Vérifier les rôles des utilisateurs sur le board
-    $board->users()->each(function (User $users) {
-        $role = $users->pivot->role;
-        if ($users->id == 1) {
-            expect($role)->toBe('master');
-        } else {
-            expect($role)->toBe('player');
-        }
-    });
 });
