@@ -157,14 +157,11 @@ it("displays a board with details", function () {
     expect($data[0]['users'][0]['name'])->toBe($board->users->first()->name);
 })->todo();
 
-it("can leave a board", function () {
+it("can leave a board successfully", function () {
     // Créer 3 utilisateurs
     $users = User::factory(3)->create();
     // Créer un Board et attacher les utilisateurs au board
     $board = Board::factory()->create();
-
-    // $board->users()->attach($users[0], ['role' => 'master']);
-    // $board->users()->attach([$users[1], $users[2]], ['role' => 'player']);
     $board->users()->attach($users);
 
     // Utilisateur qui va quitter le board
@@ -226,7 +223,7 @@ it('can leave a board successfully if other users remain', function () {
     // Compter le nombre d'utilisateurs dans la board
     // nous attendons un seul utilisateur dans ce cas
     expect($board->users)->toHaveCount(1);
-})->todo();
+});
 
 it('cannot leave a board if it will be empty', function () {
     // Créer un utilisateur
@@ -255,7 +252,7 @@ it('cannot leave a board if it will be empty', function () {
         'board_id' => $board->id,
         'user_id' => $user->id,
     ]);
-})->todo();
+});
 
 it('returns 404 if board that user try to leave does not exist', function () {
     $user = User::factory()->create();
@@ -279,11 +276,9 @@ it('cannot leave a board if user is not a member', function () {
     $this->actingAs($anotherUser)
         ->post("/api/board/leave/{$board->id}")
         ->assertStatus(403);
-})->todo();
+});
 
 it("cannot leave a board if user have role master", function () {
-    // withoutExceptionHandling();
-
     // créer deux utilisateurs et une board
     $userToLeave = User::factory()->create();
     $anotherUser = User::factory()->create();
@@ -297,4 +292,66 @@ it("cannot leave a board if user have role master", function () {
     $this->actingAs($userToLeave)
         ->post("/api/board/leave/{$board->id}")
         ->assertStatus(403);
+
+    // On vérifie explicitement en base de donnée que
+    // userToLeave soit encore sur sa Board
+    $this->assertDatabaseHas('board_user', [
+        'board_id' => $board->id,
+        'user_id' => $userToLeave->id,
+    ]);
+
+    // On attend qu'il reste 2 utilisateurs
+    // car le role "master" ne peut pas quitter son board
+    expect($board->users)->toHaveCount(2);
+});
+
+it('cannot join a full board', function () {
+    // Créer 1 utilisateur (master)
+    $user = User::factory()->create();
+    // Créer 3 utilisateurs (players)
+    $users = User::factory(3)->create();
+    // Créer un autre utilisateur
+    $userToJoin = User::factory()->create();
+
+    // Créer un Board avec une capacité de 4
+    $board = Board::factory()->create([
+        'name' => 'table pleine',
+        'description' => 'la table est pleine et doit exclure toute personne qui essaye de la rejoindre',
+        'code' => 'fulltable',
+        'capacity' => 4,
+    ]);
+
+    // Attacher les utilisateurs a la Board avec leur rôles
+    $board->users()->attach($user, ['role'=> 'master']);
+    $board->users()->attach($users, ['role'=> 'player']);
+
+    // Simuler la tentative de rejoindre le board par l'utilisateur
+    $this->actingAs($userToJoin)
+        ->post("/api/boards/join",
+            [
+                "code" => $board->code,
+            ])
+        ->assertStatus(403);
+
+    // Rafraîchir le modèle du board
+    $board->refresh();
+
+    // Vérifier le nombre d'utilisateurs sur le board n'a pas changé
+    expect($board->users)->toHaveCount(4);
+
+    // Vérifier que l'utilisateur qui a essayé de rejoindre n'est pas dans la table pivot
+    $this->assertDatabaseMissing('board_user', [
+        'board_id' => $board->id,
+        'user_id' => $userToJoin->id,
+    ]);
+
+    // Vérifier les rôles des utilisateurs sur le board
+    $board->users()->each(function (User $users) {
+        $role = $users->pivot->role;
+        if ($users->id == 1) {
+            expect($role)->toBe('master');
+        } else {
+            expect($role)->toBe('player');
+        }
+    });
 });

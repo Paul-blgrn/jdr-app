@@ -59,11 +59,19 @@ class PlayerBoardController extends Controller
 
         // Vérification si l'utilisateur est déjà associé à un board avec le même code
         // en comptant le nombre de résultats correspondants.
-        $researchBoard = $user->boards()->where('code', $request->code)->count();
+        $countBoard = $user->boards()->where('code', $request->code)->count();
 
-        if ($researchBoard > 0) {
+        if ($countBoard > 0) {
             // L'utilisateur a déjà accès à ce board
             return response()->json(['message'=> 'You are already in this board.'], 422);
+        }
+
+        // Compter les utilisateurs attachés à la Board
+        $countUsers = $board->users()->count();
+        // Tester la capacité de la Board
+        if ($countUsers >= $board->capacity) {
+            // La Board est pleine, on envoie une erreur
+            return response()->json(['message'=> 'The board is full.'], 403);
         }
 
         // Tout les tests passent, on procède à l'ajout de l'user à la Board.
@@ -72,7 +80,7 @@ class PlayerBoardController extends Controller
         // L'api retourne le Code 201 (Created), l'user à rejoint la Board.
         return response()->json(['message' => 'Board joined.'], 201);
     }
-
+ 
     /**
      * Display the specified resource.
      */
