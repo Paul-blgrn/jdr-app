@@ -194,11 +194,13 @@ it('displays the information of all players associated with a board', function (
 });
 
 it("displays a board with details", function () {
+    $user = User::factory(2)->create();
+    $board = Board::factory()->create();
 
-    $user = User::factory()->create();
-    $board = Board::factory()->hasAttached($user)->create();
+    $board->users()->attach($user[0]->id, ["role"=> "master"]);
+    $board->users()->attach($user[1]->id, ["role"=> "player"]);
 
-    $response = $this->actingAs($user)
+    $response = $this->actingAs($user[0])
         ->get("/api/board/". $board->id)
         ->assertStatus(200);
 
@@ -208,11 +210,10 @@ it("displays a board with details", function () {
     expect($data)->not->toBeEmpty();
 
     // Vérifier que $data contient le bon nombre de users
-    expect($data['users'])->toHaveCount(1);
-    // dd($data);
+    expect($data['users'])->toHaveCount(2);
 
     $pluckedData = collect($data['users'])->pluck('id')->toArray();
-    $pluckedUser = $user->boards->pluck('id')->toArray();
+    $pluckedUser = $board->users()->pluck('user_id')->toArray();
     // Vérifier les IDS
     expect($pluckedData)->toEqual($pluckedUser);
 
@@ -224,9 +225,30 @@ it("displays a board with details", function () {
     foreach ($data['users'] as $userData) {
         $originalUsers = $user->firstWhere('id', $userData['id']);
         expect($userData['name'])->toBe($originalUsers->name);
+
+        // Vérifier le rôle des utilisateurs
+        $expectedRole = $board->users()->where('user_id', $userData['id'])->first()->pivot->role;
+        expect($userData['pivot']['role'])->toBe($expectedRole);
     }
 
-    //expect($data['users'][0]['name'])->toBe($board->users->first()->name);
+    // Vérification de la structure de la réponse JSON
+    $expectedStructure = [
+        'id',
+        'name',
+        'description',
+        'capacity',
+        'users' => [
+            '*' => [
+                'id',
+                'name',
+                'email',
+                'pivot' => [
+                    'role'
+                ],
+            ],
+        ],
+    ];
+    $response->assertJsonStructure($expectedStructure);
 });
 
 it("can leave a board successfully", function () {
