@@ -3,6 +3,7 @@
 use App\Models\Board;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseMissing;
@@ -371,6 +372,9 @@ it("can leave a board successfully", function () {
     $response = $this->actingAs($userToLeave)
         ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(200);
+
+    // $this->delete("/api/board/leave/{$board->id}")
+    //     ->assertStatus(200);
 
     // Vérifier le contenu de la réponse JSON
     $response->assertJson([
