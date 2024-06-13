@@ -43,7 +43,11 @@ class PlayerBoardController extends Controller
 
         // Si la validation échoue, on renvoie une erreur
         if ($validator->fails()) {
-            return response()->json(['message' => 'Validation Error.'], 422);
+            return response()->json([
+                'message' => 'Validation Error.',
+                'errors' => $validator->errors()->toArray(),
+                'status_code' => 422,
+            ], 422);
         }
 
         // Retrouve la première board avec pour code la valeur indiqué.
@@ -51,7 +55,13 @@ class PlayerBoardController extends Controller
 
         // Si la board n'existe pas, on renvoie une erreur
         if (!$board) {
-            return response()->json(['message' => 'Board doesn\'t exist.'], 422);
+            return response()->json([
+                'message' => 'Board doesn\'t exist.',
+                'errors' => [
+                    'code' => ['Invalid board code.']
+                ],
+                'status_code' => 422,
+            ], 422);
         }
 
         // Obtenir l'utilisateur authentifié
@@ -63,7 +73,13 @@ class PlayerBoardController extends Controller
 
         if ($countBoard > 0) {
             // L'utilisateur a déjà accès à ce board
-            return response()->json(['message'=> 'You are already in this board.'], 422);
+            return response()->json([
+                'message'=> 'You are already in this board.',
+                'errors' => [
+                    'code' => ['User already in this board.']
+                ],
+                'status_code' => 422,
+            ], 422);
         }
 
         // Compter les utilisateurs attachés à la Board
@@ -71,16 +87,25 @@ class PlayerBoardController extends Controller
         // Tester la capacité de la Board
         if ($countUsers >= $board->capacity) {
             // La Board est pleine, on envoie une erreur
-            return response()->json(['message'=> 'The board is full.'], 403);
+            return response()->json([
+                'message'=> 'Board is full.',
+                'errors' => [
+                    'code' => ['User cannot join because the board is full.']
+                ],
+                'status_code' => 403,
+            ], 403);
         }
 
         // Tout les tests passent, on procède à l'ajout de l'user à la Board.
         $board->users()->attach($user, ["role" => "player"]);
 
         // L'api retourne le Code 201 (Created), l'user à rejoint la Board.
-        return response()->json(['message' => 'Board joined.'], 201);
+        return response()->json([
+            'message' => 'User joined the board successfully.',
+            'status_code' => 201,
+        ], 201);
     }
- 
+
     /**
      * Display the specified resource.
      */
@@ -131,21 +156,42 @@ class PlayerBoardController extends Controller
         if (!$foundUser) {
             // Retourner une réponse indiquant que l'utilisateur
             // n'est pas dans la liste des joueurs inscrits dans la board
-            return response()->json(['message' => 'You are not a member of this board.'], 403);
+            return response()->json([
+                'message' => 'You are not a member of this board.',
+                'errors' => [
+                    'code' => ['User cannot leave a board if they are not a member.']
+                ],
+                'status_code' => 403,
+            ], 403);
         }
 
         if ($foundUser->pivot->role == "master") {
-            return response()->json(['message' => 'The master cannot leave the board.'], 403);
+            return response()->json([
+                'message' => 'The master cannot leave the board.',
+                'errors' => [
+                    'code'=> ['User with role Master cannot leave a board (board owner).']
+                ],
+                'status_code' => 403,
+            ], 403);
         }
 
         if ($board->users()->count() <= 1) {
             // Retourner une réponse indiquant que l'utilisateur
             // ne peut pas quitter un board vide
-            return response()->json(['message' => 'Cannot leave an empty board.'], 403);
+            return response()->json([
+                'message' => 'Cannot leave an empty board.',
+                'errors' => [
+                    'code'=> ['User cannot leave an ampty board.']
+                ],
+                'status_code' => 403,
+            ], 403);
         }
 
         // Détacher l'utilisateur du board
         $board->users()->detach($user->id);
-        return response()->json(['message' => 'You have successfully left the board.'], 200);
+        return response()->json([
+            'message' => 'You have successfully left the board.',
+            'status_code' => 200,
+        ], 200);
     }
 }

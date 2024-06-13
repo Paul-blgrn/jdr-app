@@ -26,5 +26,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/boards/join', [PlayerBoardController::class, 'store']);
 
     // Leave a Board
-    Route::post('/board/leave/{board}', [PlayerBoardController::class,'destroy']);
+    Route::delete('/board/leave/{board}', [PlayerBoardController::class,'destroy']);
 });

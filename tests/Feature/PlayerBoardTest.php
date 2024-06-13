@@ -25,12 +25,24 @@ it("can join a board with right code", function () {
     $user = User::factory()->create();
     $board = Board::factory()->create();
 
-    $this->actingAs($user)
+    $response = $this->actingAs($user)
         ->post("/api/boards/join",
             [
                 "code" => $board->code,
             ])
         ->assertStatus(201);
+
+    // Vérifier que la réponse est bien en JSON et contient les données attendues
+    $response->assertJson([
+        'message' => 'User joined the board successfully.',
+        'status_code' => 201,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'status_code',
+    ]);
 
     // Vérifier que l'utilisateur a bien été ajouté au board
     $this->assertDatabaseHas("board_user", [
@@ -55,6 +67,38 @@ it("cannot join boards with wrong or empty invite code", function (string $code)
 
     // Vérifier le statut de la réponse pour indiquer une erreur de validation
     $response->assertStatus(422);
+
+    // Vérifier que la réponse est bien en JSON et contient les données attendues
+    if ($code === '') {
+        $response->assertJson([
+            "message" => "Validation Error.",
+            "errors" => [
+                "code" => [
+                    "The code field is required."
+                ],
+            ],
+            "status_code" => 422,
+        ]);
+    } else {
+        $response->assertJson([
+            "message" => "Board doesn't exist.",
+            "errors" => [
+                "code" => [
+                    "Invalid board code."
+                ],
+            ],
+            "status_code" => 422,
+        ]);
+    }
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        "message",
+        "errors" => [
+            "code"
+        ],
+        "status_code",
+    ]);
 
     // Recharger l'utilisateur pour s'assurer que les relations sont mises à jour
     $user->refresh();
@@ -85,7 +129,7 @@ it('cannot join a full board', function () {
     $board->users()->attach($users, ['role'=> 'player']);
 
     // Simuler la tentative de rejoindre le board par l'utilisateur
-    $this->actingAs($userToJoin)
+    $response = $this->actingAs($userToJoin)
         ->post("/api/boards/join",
             [
                 "code" => $board->code,
@@ -94,6 +138,26 @@ it('cannot join a full board', function () {
 
     // Rafraîchir le modèle du board
     $board->refresh();
+
+    // Vérifier que la réponse est bien en JSON et contient les données attendues
+    $response->assertJson([
+        "message"=> "Board is full.",
+        "errors"=> [
+            "code"=> [
+                "User cannot join because the board is full."
+            ],
+        ],
+        'status_code' => 403,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'errors'=> [
+            'code'
+        ],
+        'status_code',
+    ]);
 
     // Vérifier le nombre d'utilisateurs sur le board n'a pas changé
     expect($board->users)->toHaveCount(4);
@@ -124,6 +188,25 @@ it("displays all the user boards and does not send back other players boards", f
         ->actingAs($user)
         ->get('/api/boards')
         ->assertStatus(200);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        '*' => [
+            'id',
+            'name',
+            'description',
+            'capacity',
+            'code',
+            'created_at',
+            'updated_at',
+            'users_count',
+            'pivot' => [
+                'user_id',
+                'board_id',
+                'role',
+            ],
+        ],
+    ]);
 
     // Récupérer le contenu de la réponse en JSON
     $data = $response->json();
@@ -165,6 +248,24 @@ it('displays the information of all players associated with a board', function (
         ->get('/api/board/'. $board->id)
         ->assertStatus(200);
 
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'users' => [
+            '*' => [
+                'id',
+                'name',
+                'email',
+                'created_at',
+                'updated_at',
+                'pivot' => [
+                    'board_id',
+                    'user_id',
+                    'role',
+                ],
+            ],
+        ],
+    ]);
+
     $data = $response->json();
 
     // Vérifier que $data n'est pas vide
@@ -204,6 +305,30 @@ it("displays a board with details", function () {
         ->get("/api/board/". $board->id)
         ->assertStatus(200);
 
+        $response->assertJsonStructure([
+            'id',
+            'name',
+            'description',
+            'capacity',
+            'code',
+            'created_at',
+            'updated_at',
+            'users' => [
+                '*' => [
+                    'id',
+                    'name',
+                    'email',
+                    'created_at',
+                    'updated_at',
+                    'pivot' => [
+                        'board_id',
+                        'user_id',
+                        'role',
+                    ],
+                ],
+            ],
+        ]);
+
     $data = $response->json();
 
     // Vérifier que la réponse n'est pas vide
@@ -230,25 +355,6 @@ it("displays a board with details", function () {
         $expectedRole = $board->users()->where('user_id', $userData['id'])->first()->pivot->role;
         expect($userData['pivot']['role'])->toBe($expectedRole);
     }
-
-    // Vérification de la structure de la réponse JSON
-    $expectedStructure = [
-        'id',
-        'name',
-        'description',
-        'capacity',
-        'users' => [
-            '*' => [
-                'id',
-                'name',
-                'email',
-                'pivot' => [
-                    'role'
-                ],
-            ],
-        ],
-    ];
-    $response->assertJsonStructure($expectedStructure);
 });
 
 it("can leave a board successfully", function () {
@@ -262,15 +368,29 @@ it("can leave a board successfully", function () {
     $userToLeave = $users->first();
 
     // Effectuer la requête pour détacher l'utilisateur du board
-    $this->actingAs($userToLeave)
-        ->post("/api/board/leave/{$board->id}")
+    $response = $this->actingAs($userToLeave)
+        ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(200);
+
+    // Vérifier le contenu de la réponse JSON
+    $response->assertJson([
+        'message' => 'You have successfully left the board.',
+        'status_code'=> 200,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'status_code',
+    ]);
 
     // Vérifier explicitement que l'utilisateur a bien été détaché du Board
     $this->assertDatabaseMissing('board_user', [
         'board_id' => $board->id,
         'user_id' => $userToLeave->id,
     ]);
+
+
 
     // Vérifier que les autres utilisateurs sont toujours attachés
     // a la board
@@ -296,9 +416,21 @@ it('can leave a board successfully if other users remain', function () {
     $board->users()->attach([$user->id, $anotherUser->id]);
 
     // Simuler la tentative de quitter le board par l'utilisateur
-    $this->actingAs($user)
-        ->post('/api/board/leave/' . $board->id)
+    $response = $this->actingAs($user)
+        ->delete('/api/board/leave/' . $board->id)
         ->assertStatus(200);
+
+    // Vérifier le contenu de la réponse JSON
+    $response->assertJson([
+        'message' => 'You have successfully left the board.',
+        'status_code'=> 200,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'status_code',
+    ]);
 
     // Rafraîchir le modèle du board
     $board->refresh();
@@ -328,9 +460,29 @@ it('cannot leave a board if it will be empty', function () {
     $board->users()->attach($user->id);
 
     // Utilisateur qui essaie de quitter le board et échoue car cela le rendrait vide
-    $this->actingAs($user)
-        ->post("/api/board/leave/{$board->id}")
+    $response = $this->actingAs($user)
+        ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(403);
+
+    // Vérifier le contenu de la réponse JSON
+    $response->assertJson([
+        'message' => 'Cannot leave an empty board.',
+        'errors' => [
+            'code' => [
+                'User cannot leave an ampty board.'
+            ],
+        ],
+        'status_code'=> 403,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'errors' => [
+            'code',
+        ],
+        'status_code',
+    ]);
 
     // Rafraîchir le modèle du board
     $board->refresh();
@@ -354,7 +506,7 @@ it('returns 404 if board that user try to leave does not exist', function () {
 
     // Utilisateur qui essaie de quitter un board inexistant
     $this->actingAs($user)
-        ->post("/api/board/leave/{$invalidBoardId}")
+        ->delete("/api/board/leave/{$invalidBoardId}")
         ->assertStatus(404);
 });
 
@@ -367,9 +519,29 @@ it('cannot leave a board if user is not a member', function () {
     $board->users()->attach($user->id);
 
     // L'autre utilisateur qui essaie de quitter le board auquel il n'appartient pas
-    $this->actingAs($anotherUser)
-        ->post("/api/board/leave/{$board->id}")
+    $response = $this->actingAs($anotherUser)
+        ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(403);
+
+    // Vérifier le contenu de la réponse JSON
+    $response->assertJson([
+        'message'=> "You are not a member of this board.",
+        'errors'=> [
+            "code" => [
+                "User cannot leave a board if they are not a member.",
+            ],
+        ],
+        'status_code'=> 403,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'errors' => [
+            'code',
+        ],
+        'status_code',
+    ]);
 });
 
 it("cannot leave a board if user have role master", function () {
@@ -383,9 +555,29 @@ it("cannot leave a board if user have role master", function () {
     $board->users()->attach($userToLeave->id, ["role" => "master"]);
     $board->users()->attach($anotherUser->id, ["role" => "player"]);
 
-    $this->actingAs($userToLeave)
-        ->post("/api/board/leave/{$board->id}")
+    $response = $this->actingAs($userToLeave)
+        ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(403);
+
+    // Vérifier le contenu de la réponse JSON
+    $response->assertJson([
+        'message'=> "The master cannot leave the board.",
+        'errors'=> [
+            "code" => [
+                "User with role Master cannot leave a board (board owner).",
+            ],
+        ],
+        'status_code'=> 403,
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'message',
+        'errors' => [
+            'code',
+        ],
+        'status_code',
+    ]);
 
     // On vérifie explicitement en base de donnée que
     // userToLeave soit encore sur sa Board
