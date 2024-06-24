@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      actions: read|write
-      checks: read|write
-      contents: read|write
-      id-token: read|write
-      pull-requests: read|write
-      repository-projects: read|write
+      actions: write
+      checks: write
+      contents: write
+      id-token: write
+      pull-requests: write
+      repository-projects: write
 
     steps:
       - uses: actions/checkout@v4
