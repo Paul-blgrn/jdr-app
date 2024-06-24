@@ -17,37 +17,47 @@ jobs:
       - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
         with:
           php-version: '8.2'
+
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
       - name: Directory Permissions
         run: chmod -R 777 storage bootstrap/cache
-      - name: Create Database
+
+      - name: Create Database and Migrate
         run: |
           mkdir -p database
           touch database/database.sqlite
           php artisan migrate --force --no-interaction
+
       - name: Generate key
         run: php artisan key:generate
+
       - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
         run: php artisan test
+
       - name: Upload test results
         uses: actions/upload-artifact@v2
         with:
           name: test-results
           path: tests/results.xml
+
       - name: Extract test count
         id: test_count
         run: echo "::set-output name=test_count::$(grep -oP '(?<=testsuites tests=\")\d+' tests/results.xml)"
+
       - name: Generate Badge
         id: generate-badge
         run: |
           echo "[![Tests](https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen)](https://github.com/Paul-blgrn/jdr-app/tree/dev)"
           echo "badge_url=https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen" >> $GITHUB_ENV
+
       - name: Upload badge
         uses: actions/upload-artifact@v2
         with:
