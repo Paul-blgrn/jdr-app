@@ -12,6 +12,14 @@ jobs:
   laravel-tests:
     runs-on: ubuntu-latest
 
+    permissions:
+      actions: read|write
+      checks: read|write
+      contents: read|write
+      id-token: read|write
+      pull-requests: read|write
+      repository-projects: read|write
+
     steps:
       - uses: actions/checkout@v4
 
