@@ -68,17 +68,19 @@ jobs:
         id: extract_test_info
         run: |
           PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
-          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
-          FAILURES=$(grep -oP '<testsuites failures="\K\d+' tests/results.xml | head -n 1 || echo "0")
+          FAILURES=$(grep -oP '<testsuites failures="\K\d+' tests/results.xml || echo "0")
+          SKIP=$(grep -oP '<testsuites skipped="\K\d+' tests/results.xml || echo "0")
           echo "::set-output name=pass::$PASS"
-          echo "::set-output name=skip::$SKIP"
           echo "::set-output name=failures::$FAILURES"
+          echo "::set-output name=skip::$SKIP"
 
       - name: Update README with Badge URLs
+        if: success()  # Exécuter uniquement si toutes les étapes précédentes ont réussi
         run: |
           PASS=${{ steps.extract_test_info.outputs.pass }}
-          SKIP=${{ steps.extract_test_info.outputs.skip }}
           FAILURES=${{ steps.extract_test_info.outputs.failures }}
+          SKIP=${{ steps.extract_test_info.outputs.skip }}
+
           sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
-          sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skipped-${SKIP}-lightgrey?style=flat-square)|g" README.md
           sed -i "s|!\[Tests Failed\](.*)|![Tests Failed](https://img.shields.io/badge/tests_failed-${FAILURES}-red?style=flat-square)|g" README.md
+          sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skipped-${SKIP}-lightgrey?style=flat-square)|g" README.md
