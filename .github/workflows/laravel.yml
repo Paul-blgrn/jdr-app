@@ -73,3 +73,12 @@ jobs:
           echo "::set-output name=pass::$PASS"
           echo "::set-output name=skip::$SKIP"
           echo "::set-output name=failures::$FAILURES"
+
+      - name: Update README with Badge URLs
+        run: |
+          PASS=${{ steps.extract_test_info.outputs.pass }}
+          SKIP=${{ steps.extract_test_info.outputs.skip }}
+          FAILURES=${{ steps.extract_test_info.outputs.failures }}
+          sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
+          sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skipped-${SKIP}-lightgrey?style=flat-square)|g" README.md
+          sed -i "s|!\[Tests Failed\](.*)|![Tests Failed](https://img.shields.io/badge/tests_failed-${FAILURES}-red?style=flat-square)|g" README.md
