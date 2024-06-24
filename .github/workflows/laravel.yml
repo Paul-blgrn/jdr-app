@@ -1,14 +1,14 @@
-# .github/workflows/laravel.yml
+# .github/workflows/test.yml
 
-name: Laravel tests
+name: Run Tests
 
 on:
   push:
     branches:
-      - dev
+      - '**'
   pull_request:
     branches:
-      - dev
+      - '**'
   workflow_dispatch:
 
 jobs:
@@ -36,16 +36,21 @@ jobs:
         name: test-results
         path: tests/results.xml
 
-    - name: Generate test count badge
-      run: |
-        TEST_COUNT=$(vendor/bin/pest --coverage --min=85 --log-junit=tests/results.xml | grep -oP '(?<=Tests: )\d+')
-        echo "tests=$TEST_COUNT" >> $GITHUB_ENV
+    - name: Extract test count
+      id: test_count
+      run: echo "TEST_COUNT=$(vendor/bin/pest --coverage --min=85 --log-junit=tests/results.xml | grep -oP '(?<=Tests: )\d+')" >> $GITHUB_ENV
 
     - name: Create badge
-      uses: schneegans/dynamic-badges-action@v1.0.2
+      uses: emibcn/badge-action@v1.3.0
       with:
-        auth: ${{ secrets.GITHUB_TOKEN }}
         label: Tests
-        message: ${{ env.tests }}
+        message: ${{ env.TEST_COUNT }}
         color: brightgreen
-        file: test-badge.svg
+        logo: test-tube
+        output: test-badge.svg
+
+    - name: Upload badge
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-badge
+        path: test-badge.svg
