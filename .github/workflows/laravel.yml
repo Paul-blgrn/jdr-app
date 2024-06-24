@@ -72,7 +72,7 @@ jobs:
           TOTAL=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml | head -n 1 || echo "0")
           echo "::set-output name=pass::$PASS"
           echo "::set-output name=failures::$FAILURES"
-          echo "::set-output name=total::$TOTAL
+          echo "::set-output name=total::$TOTAL"
 
       - name: Update README with Badge URLs
         run: |
@@ -88,6 +88,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
           git add README.md
           git commit -m "Update README with test badges"
-          git push origin HEAD:main
+          git push origin HEAD:refs/heads/dev
