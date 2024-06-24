@@ -66,7 +66,7 @@ jobs:
           fi
           cat tests/results.xml
 
-      - name: Extract test information
+      - name: Extract_test_information
         id: extract_test_info
         run: |
           PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
@@ -78,9 +78,9 @@ jobs:
 
       - name: Update README with Badge URLs
         run: |
-          PASS=${{ steps.extract_test_info.outputs.pass }}
-          TODO=${{ steps.extract_test_info.outputs.todo }}
-          SKIP=${{ steps.extract_test_info.outputs.skip }}
+          PASS=${{ steps.Extract_test_information.outputs.pass }}
+          TODO=${{ steps.Extract_test_information.outputs.todo }}
+          SKIP=${{ steps.Extract_test_information.outputs.skip }}
           sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
           sed -i "s|!\[Tests TODO\](.*)|![Tests TODO](https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square)|g" README.md
           sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square)|g" README.md
