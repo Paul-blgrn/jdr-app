@@ -79,6 +79,13 @@ jobs:
           echo "::set-output name=todo::$TODO"
           echo "::set-output name=skip::$SKIP"
 
+      - name: Debug extracted values
+        run: |
+          echo "Extracted values:"
+          echo "PASS: ${{ steps.extract_test_info.outputs.pass }}"
+          echo "TODO: ${{ steps.extract_test_info.outputs.todo }}"
+          echo "SKIP: ${{ steps.extract_test_info.outputs.skip }}"
+
       - name: Update README with Badge URLs
         run: |
           PASS=${{ steps.extract_test_info.outputs.pass }}
