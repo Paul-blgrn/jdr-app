@@ -69,9 +69,9 @@ jobs:
       - name: Extract test information
         id: extract_test_info
         run: |
-          PASS=$(cat tests/results.xml | grep -oP '<testsuites tests="\K\d+' || echo "0")
-          TODO=$(cat tests/results.xml | grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
-          SKIP=$(cat tests/results.xml | grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
+          PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
+          TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
+          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
           echo "PASS: $PASS"
           echo "TODO: $TODO"
           echo "SKIP: $SKIP"
