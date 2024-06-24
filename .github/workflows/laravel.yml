@@ -99,7 +99,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .env.testing
           git add README.md
           git commit -m "Update README with test badges"
           git push origin HEAD:refs/heads/dev
