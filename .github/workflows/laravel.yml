@@ -97,8 +97,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          git config --local user.email "[GITHUB_TOKEN]@github.com"
-          git config --local user.name "[GITHUB_TOKEN]"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add README.md
           git commit -m "Update README with test badges"
-          git push
+          git push origin HEAD:${{ github.ref }}
