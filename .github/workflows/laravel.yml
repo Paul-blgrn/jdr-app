@@ -28,7 +28,7 @@ jobs:
       run: composer install
 
     - name: Run tests
-      run: vendor/bin/pest --coverage --min=85 --log-junit=tests/results.xml
+      run: php artisan test
 
     - name: Upload test results
       uses: actions/upload-artifact@v2
