@@ -1,9 +1,11 @@
 # The Project
 [![Laravel](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml/badge.svg?branch=dev)](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml)
 
-![Tests Passed](https://img.shields.io/badge/tests_passed-${{ steps.extract_test_info.outputs.pass }}-brightgreen?style=flat-square)
-![Tests TODO](https://img.shields.io/badge/tests_todo-${{ steps.extract_test_info.outputs.todo }}-yellow?style=flat-square)
-![Tests Skipped](https://img.shields.io/badge/tests_skip-${{ steps.extract_test_info.outputs.skip }}-lightgrey?style=flat-square)
+## Test Results
+
+![Tests Passed](https://img.shields.io/badge/tests_passed-0-brightgreen?style=flat-square)
+![Tests TODO](https://img.shields.io/badge/tests_todo-0-yellow?style=flat-square)
+![Tests Skipped](https://img.shields.io/badge/tests_skip-0-lightgrey?style=flat-square)
 
 
 <p align="center">Coming soon...</p>

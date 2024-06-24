@@ -71,24 +71,23 @@ jobs:
           echo "::set-output name=todo::$TODO"
           echo "::set-output name=skip::$SKIP"
 
-      - name: Generate Badge URL
-        id: badge_url
+      - name: Update README with Badge URLs
         run: |
           PASS=${{ steps.extract_test_info.outputs.pass }}
           TODO=${{ steps.extract_test_info.outputs.todo }}
           SKIP=${{ steps.extract_test_info.outputs.skip }}
-          echo "PASS: $PASS"
-          echo "TODO: $TODO"
-          echo "SKIP: $SKIP"
-          BADGE_URL="https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square"
-          BADGE_TODO_URL="https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square"
-          BADGE_SKIP_URL="https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square"
-          echo "badge_url=${BADGE_URL}" >> $GITHUB_ENV
-          echo "badge_todo_url=${BADGE_TODO_URL}" >> $GITHUB_ENV
-          echo "badge_skip_url=${BADGE_SKIP_URL}" >> $GITHUB_ENV
+          BADGE_PASS="![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)"
+          BADGE_TODO="![Tests TODO](https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square)"
+          BADGE_SKIP="![Tests Skipped](https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square)"
+          echo "Updating README with badges"
+          sed -i "s|!\[Tests Passed\](.*)|${BADGE_PASS}|g" README.md
+          sed -i "s|!\[Tests TODO\](.*)|${BADGE_TODO}|g" README.md
+          sed -i "s|!\[Tests Skipped\](.*)|${BADGE_SKIP}|g" README.md
 
-      - name: Display Badge URLs
+      - name: Commit and push updated README
         run: |
-          echo "Tests Passed Badge URL: ${{ env.badge_url }}"
-          echo "Tests TODO Badge URL: ${{ env.badge_todo_url }}"
-          echo "Tests Skipped Badge URL: ${{ env.badge_skip_url }}"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git commit -m 'Update README with test results badges'
+          git push
