@@ -79,13 +79,6 @@ jobs:
           echo "::set-output name=todo::$TODO"
           echo "::set-output name=skip::$SKIP"
 
-      - name: Debug extracted values
-        run: |
-          echo "Extracted values:"
-          echo "PASS: ${{ steps.extract_test_info.outputs.pass }}"
-          echo "TODO: ${{ steps.extract_test_info.outputs.todo }}"
-          echo "SKIP: ${{ steps.extract_test_info.outputs.skip }}"
-
       - name: Update README with Badge URLs
         run: |
           PASS=${{ steps.extract_test_info.outputs.pass }}
@@ -107,5 +100,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add README.md
+          git add .env.testing  # Add any other necessary files
+          git add tests/results.xml
           git commit -m "Update README with test badges"
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:refs/heads/dev
