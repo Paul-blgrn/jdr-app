@@ -1,4 +1,4 @@
-name: Laravel
+name: Laravel Tests
 
 on:
   push:
@@ -31,6 +31,9 @@ jobs:
 
       - name: Generate key for PHPUnit/Pest
         run: php artisan key:generate --env=testing
+
+      - name: Build assets with Vite
+        run: npm install && npm run prod  # Assurez-vous que Vite est correctement configuré pour votre application
 
       - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
         env:
