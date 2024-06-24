@@ -1,7 +1,7 @@
 # The Project
 [![Laravel](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml/badge.svg?branch=dev)](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml)
 
-[![Tests](https://github.com/paul-blgrn/jdr-app/raw/$%7B%7B%20env.GITHUB_SHA%20%7D%7D/badge.svg)](https://github.com/Paul-blgrn/jdr-app/actions)
+[![Tests](https://github.com/paul-blgrn/jdr-app/raw/${{ env.GITHUB_SHA }}/badge.svg)](https://github.com/Paul-blgrn/jdr-app/actions)
 
 
 <p align="center">Coming soon...</p>
