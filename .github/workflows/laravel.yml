@@ -66,24 +66,20 @@ jobs:
           fi
           cat tests/results.xml
 
-      - name: Check results.xml content
-        run: cat tests/results.xml
-
       - name: Extract test information
         id: extract_test_info
         run: |
-          PASS=$(grep -oP '(?<=testsuites tests=")\d+' tests/results.xml || echo "0")
-          TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")(\d+)(?=" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
-          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
-          echo "::set-output name=pass::$PASS"
-          echo "::set-output name=todo::$TODO"
-          echo "::set-output name=skip::$SKIP"
-
-      - name: Debug extracted variables
-        run: |
+          PASS=$(pcregrep -oP '(?<=testsuites tests=")\d+' tests/results.xml || echo "0")
+          TODO=$(pcregrep -oP '(?<=<testsuite name=".*?" tests=")\d+(?=" skipped="\d+" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
+          SKIP=$(pcregrep -oP '(?<=<testsuite name=".*?" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
           echo "PASS: $PASS"
           echo "TODO: $TODO"
           echo "SKIP: $SKIP"
+          echo "pass=$PASS" >> $GITHUB_ENV
+          echo "todo=$TODO" >> $GITHUB_ENV
+          echo "skip=$SKIP" >> $GITHUB_ENV
+        env:
+          GITHUB_ENV: .env
 
       - name: Update README with Badge URLs
         run: |
