@@ -66,21 +66,21 @@ jobs:
           fi
           cat tests/results.xml
 
-      - name: Extract_test_information
+      - name: Extract test information
         id: extract_test_info
         run: |
           PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
           TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
           SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
-          echo "PASS: $PASS"
-          echo "TODO: $TODO"
-          echo "SKIP: $SKIP"
+          echo "::set-output name=pass::$PASS"
+          echo "::set-output name=todo::$TODO"
+          echo "::set-output name=skip::$SKIP"
 
       - name: Update README with Badge URLs
         run: |
-          PASS=${{ steps.Extract_test_information.outputs.pass }}
-          TODO=${{ steps.Extract_test_information.outputs.todo }}
-          SKIP=${{ steps.Extract_test_information.outputs.skip }}
+          PASS=$(cat tests/results.xml | grep -oP '<testsuites tests="\K\d+')
+          TODO=$(cat tests/results.xml | grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' | awk '{s+=$1} END {print s}')
+          SKIP=$(cat tests/results.xml | grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' | wc -l)
           sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
           sed -i "s|!\[Tests TODO\](.*)|![Tests TODO](https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square)|g" README.md
           sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square)|g" README.md
