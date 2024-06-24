@@ -69,17 +69,12 @@ jobs:
       - name: Extract test information
         id: extract_test_info
         run: |
-          PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
-          TODO=$(grep -oP '<testsuite name=".*?" tests="\K\d+(?=" skipped="\d+" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
-          SKIP=$(grep -oP '<testsuite name=".*?" tests="\K\d+(?=" skipped="0" errors="0" failures="0" timestamp=")' tests/results.xml | wc -l || echo "0")
+          PASS=$(grep -o '<testsuites tests="[0-9]*' tests/results.xml | cut -d'"' -f2 || echo "0")
+          TODO=$(grep -o '<testsuite name=".*" tests="[0-9]*" skipped="[0-9]*"' tests/results.xml | cut -d'"' -f6 | awk '{s+=$1} END {print s}' || echo "0")
+          SKIP=$(grep -o '<testsuite name=".*" tests="[0-9]*" skipped="0"' tests/results.xml | wc -l | awk '{$1=$1};1')
           echo "PASS: $PASS"
           echo "TODO: $TODO"
           echo "SKIP: $SKIP"
-          echo "pass=$PASS" >> $GITHUB_ENV
-          echo "todo=$TODO" >> $GITHUB_ENV
-          echo "skip=$SKIP" >> $GITHUB_ENV
-        env:
-          GITHUB_ENV: .env
 
       - name: Update README with Badge URLs
         run: |
