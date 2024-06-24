@@ -67,9 +67,9 @@ jobs:
       - name: Extract test information
         id: extract_test_info
         run: |
-          PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
-          FAILURES=$(grep -oP '<testsuites failures="\K\d+' tests/results.xml || echo "0")
-          SKIP=$(grep -oP '<testsuites skipped="\K\d+' tests/results.xml || echo "0")
+          PASS=$(grep -oP '<testsuite.*tests="\K\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
+          FAILURES=$(grep -oP '<testsuite.*failures="\K\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
+          SKIP=$(grep -oP '<testsuite.*skipped="\K\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
           echo "PASS: $PASS"
           echo "FAILURES: $FAILURES"
           echo "SKIP: $SKIP"
