@@ -1,6 +1,15 @@
-name: Laravel tests
+# .github/workflows/laravel.yml
 
-on: [push, pull_request]
+name: Test Backend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   tests:
