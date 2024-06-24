@@ -41,19 +41,36 @@ jobs:
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'  # Utilisation de SQLite en mémoire
-        run: php artisan test
+        run: php artisan test --log-junit tests/results.xml
 
-      - name: Extract test count
-        id: test_count
-        run: echo "::set-output name=test_count::$(grep -oP '(?<=testsuites tests=\")\d+' tests/results.xml)"
-
-      - name: Generate Badge
-        run: |
-          TEST_COUNT=${{ steps.test_count.outputs.test_count }}
-          echo "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"20\"><linearGradient id=\"b\" x2=\"0\" y2=\"100%\"><stop offset=\"0\" stop-color=\"#bbb\" stop-opacity=\".1\"/><stop offset=\"1\" stop-opacity=\"0\"/></linearGradient><clipPath id=\"a\"><rect width=\"80\" height=\"20\" rx=\"3\" fill=\"#555\"/></clipPath><g clip-path=\"url(#a)\"><path fill=\"#4c1\" d=\"M0 0h39v20H0z\"/><path fill=\"#4c1\" d=\"M39 0h41v20H39z\"/><path fill=\"url(#b)\" d=\"M0 0h80v20H0z\"/></g><g fill=\"#fff\" text-anchor=\"middle\" font-family=\"DejaVu Sans,Verdana,Geneva,sans-serif\" font-size=\"11\"><text x=\"19.5\" y=\"15\" fill=\"#010101\" fill-opacity=\".3\">tests</text><text x=\"19.5\" y=\"14\">tests</text><text x=\"58\" y=\"15\" fill=\"#010101\" fill-opacity=\".3\">${TEST_COUNT}</text><text x=\"58\" y=\"14\">${TEST_COUNT}</text></g></svg>" > badge.svg
-
-      - name: Upload badge
+      - name: Upload test results
         uses: actions/upload-artifact@v2
         with:
-          name: test-badge
-          path: badge.svg
+          name: test-results
+          path: tests/results.xml
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Extract test information
+        id: extract_test_info
+        run: |
+          PASS=$(grep -oP '(?<=testsuites tests=")\d+' tests/results.xml)
+          TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")(\d+)(?=" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}')
+          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l)
+          echo "::set-output name=pass::$PASS"
+          echo "::set-output name=todo::$TODO"
+          echo "::set-output name=skip::$SKIP"
+
+      - name: Generate Badge URL
+        id: badge_url
+        run: |
+          PASS=${{ steps.extract_test_info.outputs.pass }}
+          TODO=${{ steps.extract_test_info.outputs.todo }}
+          SKIP=${{ steps.extract_test_info.outputs.skip }}
+          BADGE_URL="https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square"
+          BADGE_TODO_URL="https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square"
+          BADGE_SKIP_URL="https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square"
+          echo "badge_url=${BADGE_URL}" >> $GITHUB_ENV
+          echo "badge_todo_url=${BADGE_TODO_URL}" >> $GITHUB_ENV
+          echo "badge_skip_url=${BADGE_SKIP_URL}" >> $GITHUB_ENV
