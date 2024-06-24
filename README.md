@@ -1,4 +1,6 @@
 # The Project
+[![Laravel](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml/badge.svg?branch=dev)](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml)
+
 [![Tests](https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen)](https://github.com/Paul-blgrn/jdr-app/tree/dev)
 
 <p align="center">Coming soon...</p>
