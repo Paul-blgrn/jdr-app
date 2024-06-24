@@ -74,11 +74,11 @@ class BoardController extends Controller
         // Si l'utilisateur n'a pas le role "master", on renvoie une erreur
         if ($foundUser->pivot->role !== "master") {
             return response()->json([
-                'status_code' => 403,
-                'status_title' => 'No permission',
-                'error' => [
-                    'message' => 'Player cannot delete a board',
-                ],
+                'response' => [
+                    'status_title' => 'No permission',
+                    'status_message' => 'The user with role Player cannot delete a board.',
+                    'status_code' => 403,
+                ]
             ], 403);
         }
 

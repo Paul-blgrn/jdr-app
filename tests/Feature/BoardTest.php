@@ -37,12 +37,22 @@ test("user with role player cannot delete à board", function () {
         ->delete("/api/board/delete/{$board->id}")
         ->assertStatus(403);
 
+    // Vérifier le contenu de la réponse JSON
     $response->assertJson([
-        'status_code' => 403,
-        'status_title' => 'No permission',
-        'error' => [
-            'message' => 'Player cannot delete a board',
-        ],
+        'response' => [
+            'status_title' => 'No permission',
+            'status_message' => 'The user with role Player cannot delete a board.',
+            'status_code' => 403,
+        ]
+    ]);
+
+    // Vérifier la structure de la réponse JSON
+    $response->assertJsonStructure([
+        'response' => [
+            'status_title',
+            'status_message',
+            'status_code',
+        ]
     ]);
 });
 
