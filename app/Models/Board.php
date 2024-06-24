@@ -15,4 +15,20 @@ class Board extends Model
     public function users() {
         return $this->belongsToMany(User::class)->withPivot('role');
     }
+
+    public function chats() {
+        return $this->belongsToMany(Chat::class);
+    }
+
+    public function templates() {
+        return $this->belongsToMany(Template::class);
+    }
+
+    public function logs() {
+        return $this->hasMany(Log::class);
+    }
+
+    public function fiches() {
+        return $this->hasMany(Fiche::class);
+    }
 }

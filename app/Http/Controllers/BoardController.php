@@ -57,9 +57,30 @@ class BoardController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     *
+     * @param  int  $boardId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id) {
+    public function destroy($boardId) {
+        // Récupérer l'utilisateur authentifié
+        $user = auth()->user();
+
+        // Récupérer le board en question
+        $board = Board::findOrFail($boardId);
+
+        // Récupérer l'usilisateur dans la board
+        $foundUser = $board->users()->where('user_id', $user->id)->first();
+
+        // Si l'utilisateur n'a pas le role "master", on renvoie une erreur
+        if ($foundUser->pivot->role !== "master") {
+            return response()->json([
+                'status_code' => 403,
+                'status_title' => 'No permission',
+                'error' => [
+                    'message' => 'Player cannot delete a board',
+                ],
+            ], 403);
+        }
 
     }
 }

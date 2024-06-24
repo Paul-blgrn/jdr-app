@@ -19,6 +19,15 @@ return new class extends Migration
             $table->string('code', 10);
             $table->timestamps();
         });
+
+        // Ajout de la contrainte de suppression en cascade
+        Schema::table('boards', function (Blueprint $table) {
+            // Si une board est supprimée, les joueurs associés seront supprimés également
+            $table->foreign('board_user')->constrained()->onDelete('cascade');
+
+            // Si une board est supprimée, les chats associés seront supprimés également
+            // $table->foreign('chat_id')->constrained()->onDelete('cascade');
+        });
     }
 
     /**

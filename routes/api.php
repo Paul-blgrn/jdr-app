@@ -27,4 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Leave a Board
     Route::delete('/board/leave/{board}', [PlayerBoardController::class,'destroy']);
+
+    // Delete a board
+    Route::delete('/board/delete/{board}', [BoardController::class, 'destroy']);
 });

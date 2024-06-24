@@ -21,3 +21,40 @@ it("can create board", function () {
 test("the creator of board have role master", function () {
 
 })->todo();
+
+test("user with role player cannot delete à board", function () {
+    // Créer deux Utilisateurs et une Board
+    $user = User::factory()->create();
+    $master = User::factory()->create();
+    $board = Board::factory()->create();
+
+    // Attacher l'utilisateur $master à la Board et lui attribuer le role master
+    $board->users()->attach($master->id, ["role" => "master"]);
+    // Attacher l'utilisateur $user à la Board et lui attribuer le role player
+    $board->users()->attach($user->id, ["role" => "player"]);
+
+    $response = $this->actingAs($user)
+        ->delete("/api/board/delete/{$board->id}")
+        ->assertStatus(403);
+
+    $response->assertJson([
+        'status_code' => 403,
+        'status_title' => 'No permission',
+        'error' => [
+            'message' => 'Player cannot delete a board',
+        ],
+    ]);
+});
+
+it("can delete a board if user have role master", function() {
+    // créer un utilisateur et une board
+    $user = User::factory()->create();
+    $board = Board::factory()->create();
+
+    // Attacher l'utilisateur à la Board et lui attribuer le role master
+    $board->users()->attach($user->id, ["role" => "master"]);
+
+    $response = $this->actingAs($user)
+        ->delete("/api/board/delete/{$board->id}")
+        ->assertStatus(200);
+})->todo();
