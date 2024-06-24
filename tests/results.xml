@@ -1,121 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="/home/runner/work/jdr-app/jdr-app/phpunit.xml" tests="57" assertions="282" errors="0" failures="0" skipped="13" time="2.337931">
-    <testsuite name="Unit" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.004980">
-      <testsuite name="Tests\Unit\ExampleTest" file="tests/Unit/ExampleTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.004980">
-        <testcase name="that true is true" file="tests/Unit/ExampleTest.php::that true is true" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" assertions="1" time="0.004980"/>
+  <testsuite name="/home/runner/work/jdr-app/jdr-app/phpunit.xml" tests="57" assertions="282" errors="0" failures="0" skipped="13" time="2.613867">
+    <testsuite name="Unit" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.005619">
+      <testsuite name="Tests\Unit\ExampleTest" file="tests/Unit/ExampleTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.005619">
+        <testcase name="that true is true" file="tests/Unit/ExampleTest.php::that true is true" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" assertions="1" time="0.005619"/>
       </testsuite>
     </testsuite>
-    <testsuite name="Feature" tests="56" assertions="281" errors="0" failures="0" skipped="13" time="2.332951">
-      <testsuite name="Tests\Feature\Auth\AuthenticationTest" file="tests/Feature/Auth/AuthenticationTest.php" tests="4" assertions="8" errors="0" failures="0" skipped="0" time="0.528432">
-        <testcase name="login screen can be rendered" file="tests/Feature/Auth/AuthenticationTest.php::login screen can be rendered" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="1" time="0.221722"/>
-        <testcase name="users can authenticate using the login screen" file="tests/Feature/Auth/AuthenticationTest.php::users can authenticate using the login screen" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="3" time="0.050282"/>
-        <testcase name="users can not authenticate with invalid password" file="tests/Feature/Auth/AuthenticationTest.php::users can not authenticate with invalid password" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="1" time="0.229174"/>
-        <testcase name="users can logout" file="tests/Feature/Auth/AuthenticationTest.php::users can logout" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="3" time="0.027254"/>
+    <testsuite name="Feature" tests="56" assertions="281" errors="0" failures="0" skipped="13" time="2.608248">
+      <testsuite name="Tests\Feature\Auth\AuthenticationTest" file="tests/Feature/Auth/AuthenticationTest.php" tests="4" assertions="8" errors="0" failures="0" skipped="0" time="0.558212">
+        <testcase name="login screen can be rendered" file="tests/Feature/Auth/AuthenticationTest.php::login screen can be rendered" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="1" time="0.245562"/>
+        <testcase name="users can authenticate using the login screen" file="tests/Feature/Auth/AuthenticationTest.php::users can authenticate using the login screen" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="3" time="0.053553"/>
+        <testcase name="users can not authenticate with invalid password" file="tests/Feature/Auth/AuthenticationTest.php::users can not authenticate with invalid password" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="1" time="0.231322"/>
+        <testcase name="users can logout" file="tests/Feature/Auth/AuthenticationTest.php::users can logout" class="Tests\Feature\Auth\AuthenticationTest" classname="Tests.Feature.Auth.AuthenticationTest" assertions="3" time="0.027775"/>
       </testsuite>
-      <testsuite name="Tests\Feature\Auth\EmailVerificationTest" file="tests/Feature/Auth/EmailVerificationTest.php" tests="3" assertions="6" errors="0" failures="0" skipped="0" time="0.095748">
-        <testcase name="email verification screen can be rendered" file="tests/Feature/Auth/EmailVerificationTest.php::email verification screen can be rendered" class="Tests\Feature\Auth\EmailVerificationTest" classname="Tests.Feature.Auth.EmailVerificationTest" assertions="1" time="0.035726"/>
-        <testcase name="email can be verified" file="tests/Feature/Auth/EmailVerificationTest.php::email can be verified" class="Tests\Feature\Auth\EmailVerificationTest" classname="Tests.Feature.Auth.EmailVerificationTest" assertions="4" time="0.030216"/>
-        <testcase name="email is not verified with invalid hash" file="tests/Feature/Auth/EmailVerificationTest.php::email is not verified with invalid hash" class="Tests\Feature\Auth\EmailVerificationTest" classname="Tests.Feature.Auth.EmailVerificationTest" assertions="1" time="0.029805"/>
+      <testsuite name="Tests\Feature\Auth\EmailVerificationTest" file="tests/Feature/Auth/EmailVerificationTest.php" tests="3" assertions="6" errors="0" failures="0" skipped="0" time="0.099966">
+        <testcase name="email verification screen can be rendered" file="tests/Feature/Auth/EmailVerificationTest.php::email verification screen can be rendered" class="Tests\Feature\Auth\EmailVerificationTest" classname="Tests.Feature.Auth.EmailVerificationTest" assertions="1" time="0.037216"/>
+        <testcase name="email can be verified" file="tests/Feature/Auth/EmailVerificationTest.php::email can be verified" class="Tests\Feature\Auth\EmailVerificationTest" classname="Tests.Feature.Auth.EmailVerificationTest" assertions="4" time="0.031650"/>
+        <testcase name="email is not verified with invalid hash" file="tests/Feature/Auth/EmailVerificationTest.php::email is not verified with invalid hash" class="Tests\Feature\Auth\EmailVerificationTest" classname="Tests.Feature.Auth.EmailVerificationTest" assertions="1" time="0.031099"/>
       </testsuite>
-      <testsuite name="Tests\Feature\Auth\PasswordConfirmationTest" file="tests/Feature/Auth/PasswordConfirmationTest.php" tests="3" assertions="4" errors="0" failures="0" skipped="0" time="0.294624">
-        <testcase name="confirm password screen can be rendered" file="tests/Feature/Auth/PasswordConfirmationTest.php::confirm password screen can be rendered" class="Tests\Feature\Auth\PasswordConfirmationTest" classname="Tests.Feature.Auth.PasswordConfirmationTest" assertions="1" time="0.040307"/>
-        <testcase name="password can be confirmed" file="tests/Feature/Auth/PasswordConfirmationTest.php::password can be confirmed" class="Tests\Feature\Auth\PasswordConfirmationTest" classname="Tests.Feature.Auth.PasswordConfirmationTest" assertions="2" time="0.027153"/>
-        <testcase name="password is not confirmed with invalid password" file="tests/Feature/Auth/PasswordConfirmationTest.php::password is not confirmed with invalid password" class="Tests\Feature\Auth\PasswordConfirmationTest" classname="Tests.Feature.Auth.PasswordConfirmationTest" assertions="1" time="0.227164"/>
+      <testsuite name="Tests\Feature\Auth\PasswordConfirmationTest" file="tests/Feature/Auth/PasswordConfirmationTest.php" tests="3" assertions="4" errors="0" failures="0" skipped="0" time="0.302749">
+        <testcase name="confirm password screen can be rendered" file="tests/Feature/Auth/PasswordConfirmationTest.php::confirm password screen can be rendered" class="Tests\Feature\Auth\PasswordConfirmationTest" classname="Tests.Feature.Auth.PasswordConfirmationTest" assertions="1" time="0.046020"/>
+        <testcase name="password can be confirmed" file="tests/Feature/Auth/PasswordConfirmationTest.php::password can be confirmed" class="Tests\Feature\Auth\PasswordConfirmationTest" classname="Tests.Feature.Auth.PasswordConfirmationTest" assertions="2" time="0.028427"/>
+        <testcase name="password is not confirmed with invalid password" file="tests/Feature/Auth/PasswordConfirmationTest.php::password is not confirmed with invalid password" class="Tests\Feature\Auth\PasswordConfirmationTest" classname="Tests.Feature.Auth.PasswordConfirmationTest" assertions="1" time="0.228301"/>
       </testsuite>
-      <testsuite name="Tests\Feature\Auth\PasswordResetTest" file="tests/Feature/Auth/PasswordResetTest.php" tests="4" assertions="8" errors="0" failures="0" skipped="0" time="0.160742">
-        <testcase name="reset password link screen can be rendered" file="tests/Feature/Auth/PasswordResetTest.php::reset password link screen can be rendered" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="1" time="0.039416"/>
-        <testcase name="reset password link can be requested" file="tests/Feature/Auth/PasswordResetTest.php::reset password link can be requested" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="1" time="0.032939"/>
-        <testcase name="reset password screen can be rendered" file="tests/Feature/Auth/PasswordResetTest.php::reset password screen can be rendered" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="2" time="0.050836"/>
-        <testcase name="password can be reset with valid token" file="tests/Feature/Auth/PasswordResetTest.php::password can be reset with valid token" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="4" time="0.037551"/>
+      <testsuite name="Tests\Feature\Auth\PasswordResetTest" file="tests/Feature/Auth/PasswordResetTest.php" tests="4" assertions="8" errors="0" failures="0" skipped="0" time="0.169660">
+        <testcase name="reset password link screen can be rendered" file="tests/Feature/Auth/PasswordResetTest.php::reset password link screen can be rendered" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="1" time="0.041727"/>
+        <testcase name="reset password link can be requested" file="tests/Feature/Auth/PasswordResetTest.php::reset password link can be requested" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="1" time="0.035401"/>
+        <testcase name="reset password screen can be rendered" file="tests/Feature/Auth/PasswordResetTest.php::reset password screen can be rendered" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="2" time="0.052868"/>
+        <testcase name="password can be reset with valid token" file="tests/Feature/Auth/PasswordResetTest.php::password can be reset with valid token" class="Tests\Feature\Auth\PasswordResetTest" classname="Tests.Feature.Auth.PasswordResetTest" assertions="4" time="0.039664"/>
       </testsuite>
-      <testsuite name="Tests\Feature\Auth\PasswordUpdateTest" file="tests/Feature/Auth/PasswordUpdateTest.php" tests="2" assertions="8" errors="0" failures="0" skipped="0" time="0.062891">
-        <testcase name="password can be updated" file="tests/Feature/Auth/PasswordUpdateTest.php::password can be updated" class="Tests\Feature\Auth\PasswordUpdateTest" classname="Tests.Feature.Auth.PasswordUpdateTest" assertions="4" time="0.035560"/>
-        <testcase name="correct password must be provided to update password" file="tests/Feature/Auth/PasswordUpdateTest.php::correct password must be provided to update password" class="Tests\Feature\Auth\PasswordUpdateTest" classname="Tests.Feature.Auth.PasswordUpdateTest" assertions="4" time="0.027332"/>
+      <testsuite name="Tests\Feature\Auth\PasswordUpdateTest" file="tests/Feature/Auth/PasswordUpdateTest.php" tests="2" assertions="8" errors="0" failures="0" skipped="0" time="0.064968">
+        <testcase name="password can be updated" file="tests/Feature/Auth/PasswordUpdateTest.php::password can be updated" class="Tests\Feature\Auth\PasswordUpdateTest" classname="Tests.Feature.Auth.PasswordUpdateTest" assertions="4" time="0.036820"/>
+        <testcase name="correct password must be provided to update password" file="tests/Feature/Auth/PasswordUpdateTest.php::correct password must be provided to update password" class="Tests\Feature\Auth\PasswordUpdateTest" classname="Tests.Feature.Auth.PasswordUpdateTest" assertions="4" time="0.028148"/>
       </testsuite>
-      <testsuite name="Tests\Feature\Auth\RegistrationTest" file="tests/Feature/Auth/RegistrationTest.php" tests="2" assertions="4" errors="0" failures="0" skipped="0" time="0.079511">
-        <testcase name="registration screen can be rendered" file="tests/Feature/Auth/RegistrationTest.php::registration screen can be rendered" class="Tests\Feature\Auth\RegistrationTest" classname="Tests.Feature.Auth.RegistrationTest" assertions="1" time="0.051831"/>
-        <testcase name="new users can register" file="tests/Feature/Auth/RegistrationTest.php::new users can register" class="Tests\Feature\Auth\RegistrationTest" classname="Tests.Feature.Auth.RegistrationTest" assertions="3" time="0.027680"/>
+      <testsuite name="Tests\Feature\Auth\RegistrationTest" file="tests/Feature/Auth/RegistrationTest.php" tests="2" assertions="4" errors="0" failures="0" skipped="0" time="0.081691">
+        <testcase name="registration screen can be rendered" file="tests/Feature/Auth/RegistrationTest.php::registration screen can be rendered" class="Tests\Feature\Auth\RegistrationTest" classname="Tests.Feature.Auth.RegistrationTest" assertions="1" time="0.052412"/>
+        <testcase name="new users can register" file="tests/Feature/Auth/RegistrationTest.php::new users can register" class="Tests\Feature\Auth\RegistrationTest" classname="Tests.Feature.Auth.RegistrationTest" assertions="3" time="0.029278"/>
       </testsuite>
-      <testsuite name="Tests\Feature\BoardTest" file="tests/Feature/BoardTest.php" tests="4" assertions="2" errors="0" failures="0" skipped="3" time="0.093222">
-        <testcase name="it can create board" file="tests/Feature/BoardTest.php::it can create board" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="0" time="0.022219">
+      <testsuite name="Tests\Feature\BoardTest" file="tests/Feature/BoardTest.php" tests="4" assertions="2" errors="0" failures="0" skipped="3" time="0.099130">
+        <testcase name="it can create board" file="tests/Feature/BoardTest.php::it can create board" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="0" time="0.023769">
           <skipped/>
         </testcase>
-        <testcase name="the creator of board have role master" file="tests/Feature/BoardTest.php::the creator of board have role master" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="0" time="0.019271">
+        <testcase name="the creator of board have role master" file="tests/Feature/BoardTest.php::the creator of board have role master" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="0" time="0.020591">
           <skipped/>
         </testcase>
-        <testcase name="user with role player cannot delete à board" file="tests/Feature/BoardTest.php::user with role player cannot delete à board" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="2" time="0.032162"/>
-        <testcase name="it can delete a board if user have role master" file="tests/Feature/BoardTest.php::it can delete a board if user have role master" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="0" time="0.019570">
-          <skipped/>
-        </testcase>
-      </testsuite>
-      <testsuite name="Tests\Feature\ChatTest" file="tests/Feature/ChatTest.php" tests="2" assertions="0" errors="0" failures="0" skipped="2" time="0.043961">
-        <testcase name="it can add message" file="tests/Feature/ChatTest.php::it can add message" class="Tests\Feature\ChatTest" classname="Tests.Feature.ChatTest" assertions="0" time="0.024575">
-          <skipped/>
-        </testcase>
-        <testcase name="it can see messages" file="tests/Feature/ChatTest.php::it can see messages" class="Tests\Feature\ChatTest" classname="Tests.Feature.ChatTest" assertions="0" time="0.019386">
+        <testcase name="user with role player cannot delete à board" file="tests/Feature/BoardTest.php::user with role player cannot delete à board" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="2" time="0.034263"/>
+        <testcase name="it can delete a board if user have role master" file="tests/Feature/BoardTest.php::it can delete a board if user have role master" class="Tests\Feature\BoardTest" classname="Tests.Feature.BoardTest" assertions="0" time="0.020508">
           <skipped/>
         </testcase>
       </testsuite>
-      <testsuite name="Tests\Feature\ExampleTest" file="Example (Tests\Feature\Example)" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.027833">
-        <testcase name="The application returns a successful response" file="Example (Tests\Feature\Example)::The application returns a successful response" class="Tests\Feature\ExampleTest" classname="Tests.Feature.ExampleTest" assertions="1" time="0.027833"/>
-      </testsuite>
-      <testsuite name="Tests\Feature\LogsTest" file="tests/Feature/LogsTest.php" tests="5" assertions="0" errors="0" failures="0" skipped="5" time="0.100866">
-        <testcase name="it can create log" file="tests/Feature/LogsTest.php::it can create log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.021037">
+      <testsuite name="Tests\Feature\ChatTest" file="tests/Feature/ChatTest.php" tests="2" assertions="0" errors="0" failures="0" skipped="2" time="0.045247">
+        <testcase name="it can add message" file="tests/Feature/ChatTest.php::it can add message" class="Tests\Feature\ChatTest" classname="Tests.Feature.ChatTest" assertions="0" time="0.025332">
           <skipped/>
         </testcase>
-        <testcase name="it can delete log" file="tests/Feature/LogsTest.php::it can delete log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.019492">
-          <skipped/>
-        </testcase>
-        <testcase name="it can show all logs" file="tests/Feature/LogsTest.php::it can show all logs" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.019322">
-          <skipped/>
-        </testcase>
-        <testcase name="it can show a log" file="tests/Feature/LogsTest.php::it can show a log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.019188">
-          <skipped/>
-        </testcase>
-        <testcase name="it can show a specific log" file="tests/Feature/LogsTest.php::it can show a specific log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.021827">
+        <testcase name="it can see messages" file="tests/Feature/ChatTest.php::it can see messages" class="Tests\Feature\ChatTest" classname="Tests.Feature.ChatTest" assertions="0" time="0.019915">
           <skipped/>
         </testcase>
       </testsuite>
-      <testsuite name="Tests\Feature\PlayerBoardTest" file="tests/Feature/PlayerBoardTest.php" tests="15" assertions="216" errors="0" failures="0" skipped="0" time="0.473608">
-        <testcase name="it sent a 404 error when accessing a board that do not exist" file="tests/Feature/PlayerBoardTest.php::it sent a 404 error when accessing a board that do not exist" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="2" time="0.034822"/>
-        <testcase name="it can join a board with right code" file="tests/Feature/PlayerBoardTest.php::it can join a board with right code" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="9" time="0.029247"/>
-        <testsuite name="Tests\Feature\PlayerBoardTest::__pest_evaluable_it_cannot_join_boards_with_wrong_or_empty_invite_code" tests="3" assertions="21" errors="0" failures="0" skipped="0" time="0.079137">
-          <testcase name="it cannot join boards with wrong or empty invite code with data set &quot;('12345')&quot;" file="tests/Feature/PlayerBoardTest.php::it cannot join boards with wrong or empty invite code with data set &quot;('12345')&quot;" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="7" time="0.026280"/>
-          <testcase name="it cannot join boards with wrong or empty invite code with data set &quot;('bonjour')&quot;" file="tests/Feature/PlayerBoardTest.php::it cannot join boards with wrong or empty invite code with data set &quot;('bonjour')&quot;" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="7" time="0.026326"/>
-          <testcase name="it cannot join boards with wrong or empty invite code with data set &quot;('')&quot;" file="tests/Feature/PlayerBoardTest.php::it cannot join boards with wrong or empty invite code with data set &quot;('')&quot;" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="7" time="0.026531"/>
+      <testsuite name="Tests\Feature\ExampleTest" file="Example (Tests\Feature\Example)" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.028803">
+        <testcase name="The application returns a successful response" file="Example (Tests\Feature\Example)::The application returns a successful response" class="Tests\Feature\ExampleTest" classname="Tests.Feature.ExampleTest" assertions="1" time="0.028803"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\LogsTest" file="tests/Feature/LogsTest.php" tests="5" assertions="0" errors="0" failures="0" skipped="5" time="0.107448">
+        <testcase name="it can create log" file="tests/Feature/LogsTest.php::it can create log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.022255">
+          <skipped/>
+        </testcase>
+        <testcase name="it can delete log" file="tests/Feature/LogsTest.php::it can delete log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.021118">
+          <skipped/>
+        </testcase>
+        <testcase name="it can show all logs" file="tests/Feature/LogsTest.php::it can show all logs" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.019960">
+          <skipped/>
+        </testcase>
+        <testcase name="it can show a log" file="tests/Feature/LogsTest.php::it can show a log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.019956">
+          <skipped/>
+        </testcase>
+        <testcase name="it can show a specific log" file="tests/Feature/LogsTest.php::it can show a specific log" class="Tests\Feature\LogsTest" classname="Tests.Feature.LogsTest" assertions="0" time="0.024158">
+          <skipped/>
+        </testcase>
+      </testsuite>
+      <testsuite name="Tests\Feature\PlayerBoardTest" file="tests/Feature/PlayerBoardTest.php" tests="15" assertions="216" errors="0" failures="0" skipped="0" time="0.666214">
+        <testcase name="it sent a 404 error when accessing a board that do not exist" file="tests/Feature/PlayerBoardTest.php::it sent a 404 error when accessing a board that do not exist" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="2" time="0.036930"/>
+        <testcase name="it can join a board with right code" file="tests/Feature/PlayerBoardTest.php::it can join a board with right code" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="9" time="0.208572"/>
+        <testsuite name="Tests\Feature\PlayerBoardTest::__pest_evaluable_it_cannot_join_boards_with_wrong_or_empty_invite_code" tests="3" assertions="21" errors="0" failures="0" skipped="0" time="0.083537">
+          <testcase name="it cannot join boards with wrong or empty invite code with data set &quot;('12345')&quot;" file="tests/Feature/PlayerBoardTest.php::it cannot join boards with wrong or empty invite code with data set &quot;('12345')&quot;" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="7" time="0.027988"/>
+          <testcase name="it cannot join boards with wrong or empty invite code with data set &quot;('bonjour')&quot;" file="tests/Feature/PlayerBoardTest.php::it cannot join boards with wrong or empty invite code with data set &quot;('bonjour')&quot;" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="7" time="0.027342"/>
+          <testcase name="it cannot join boards with wrong or empty invite code with data set &quot;('')&quot;" file="tests/Feature/PlayerBoardTest.php::it cannot join boards with wrong or empty invite code with data set &quot;('')&quot;" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="7" time="0.028207"/>
         </testsuite>
-        <testcase name="it cannot join a full board" file="tests/Feature/PlayerBoardTest.php::it cannot join a full board" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="12" time="0.042664"/>
-        <testcase name="it displays all the user boards and does not send back other players boards" file="tests/Feature/PlayerBoardTest.php::it displays all the user boards and does not send back other players boards" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="53" time="0.038603"/>
-        <testcase name="it displays the information of all players associated with a board" file="tests/Feature/PlayerBoardTest.php::it displays the information of all players associated with a board" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="39" time="0.037727"/>
-        <testcase name="it displays a board with details" file="tests/Feature/PlayerBoardTest.php::it displays a board with details" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="38" time="0.037065"/>
-        <testcase name="it can leave a board successfully" file="tests/Feature/PlayerBoardTest.php::it can leave a board successfully" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="10" time="0.031676"/>
-        <testcase name="it can leave a board successfully if other users remain" file="tests/Feature/PlayerBoardTest.php::it can leave a board successfully if other users remain" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="9" time="0.030890"/>
-        <testcase name="it cannot leave a board if it will be empty" file="tests/Feature/PlayerBoardTest.php::it cannot leave a board if it will be empty" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="8" time="0.029017"/>
-        <testcase name="it returns 404 if board that user try to leave does not exist" file="tests/Feature/PlayerBoardTest.php::it returns 404 if board that user try to leave does not exist" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="1" time="0.025465"/>
-        <testcase name="it cannot leave a board if user is not a member" file="tests/Feature/PlayerBoardTest.php::it cannot leave a board if user is not a member" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="6" time="0.027755"/>
-        <testcase name="it cannot leave a board if user have role master" file="tests/Feature/PlayerBoardTest.php::it cannot leave a board if user have role master" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="8" time="0.029540"/>
+        <testcase name="it cannot join a full board" file="tests/Feature/PlayerBoardTest.php::it cannot join a full board" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="12" time="0.037698"/>
+        <testcase name="it displays all the user boards and does not send back other players boards" file="tests/Feature/PlayerBoardTest.php::it displays all the user boards and does not send back other players boards" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="53" time="0.039621"/>
+        <testcase name="it displays the information of all players associated with a board" file="tests/Feature/PlayerBoardTest.php::it displays the information of all players associated with a board" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="39" time="0.038673"/>
+        <testcase name="it displays a board with details" file="tests/Feature/PlayerBoardTest.php::it displays a board with details" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="38" time="0.038329"/>
+        <testcase name="it can leave a board successfully" file="tests/Feature/PlayerBoardTest.php::it can leave a board successfully" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="10" time="0.032954"/>
+        <testcase name="it can leave a board successfully if other users remain" file="tests/Feature/PlayerBoardTest.php::it can leave a board successfully if other users remain" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="9" time="0.032290"/>
+        <testcase name="it cannot leave a board if it will be empty" file="tests/Feature/PlayerBoardTest.php::it cannot leave a board if it will be empty" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="8" time="0.030019"/>
+        <testcase name="it returns 404 if board that user try to leave does not exist" file="tests/Feature/PlayerBoardTest.php::it returns 404 if board that user try to leave does not exist" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="1" time="0.027219"/>
+        <testcase name="it cannot leave a board if user is not a member" file="tests/Feature/PlayerBoardTest.php::it cannot leave a board if user is not a member" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="6" time="0.029466"/>
+        <testcase name="it cannot leave a board if user have role master" file="tests/Feature/PlayerBoardTest.php::it cannot leave a board if user have role master" class="Tests\Feature\PlayerBoardTest" classname="Tests.Feature.PlayerBoardTest" assertions="8" time="0.030905"/>
       </testsuite>
-      <testsuite name="Tests\Feature\ProfileTest" file="tests/Feature/ProfileTest.php" tests="5" assertions="21" errors="0" failures="0" skipped="0" time="0.232387">
-        <testcase name="profile page is displayed" file="tests/Feature/ProfileTest.php::profile page is displayed" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="1" time="0.118853"/>
-        <testcase name="profile information can be updated" file="tests/Feature/ProfileTest.php::profile information can be updated" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="6" time="0.030074"/>
-        <testcase name="email verification status is unchanged when the email address is unchanged" file="tests/Feature/ProfileTest.php::email verification status is unchanged when the email address is unchanged" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="4" time="0.028643"/>
-        <testcase name="user can delete their account" file="tests/Feature/ProfileTest.php::user can delete their account" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="5" time="0.027607"/>
-        <testcase name="correct password must be provided to delete account" file="tests/Feature/ProfileTest.php::correct password must be provided to delete account" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="5" time="0.027209"/>
+      <testsuite name="Tests\Feature\ProfileTest" file="tests/Feature/ProfileTest.php" tests="5" assertions="21" errors="0" failures="0" skipped="0" time="0.238522">
+        <testcase name="profile page is displayed" file="tests/Feature/ProfileTest.php::profile page is displayed" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="1" time="0.119549"/>
+        <testcase name="profile information can be updated" file="tests/Feature/ProfileTest.php::profile information can be updated" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="6" time="0.031167"/>
+        <testcase name="email verification status is unchanged when the email address is unchanged" file="tests/Feature/ProfileTest.php::email verification status is unchanged when the email address is unchanged" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="4" time="0.029780"/>
+        <testcase name="user can delete their account" file="tests/Feature/ProfileTest.php::user can delete their account" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="5" time="0.029133"/>
+        <testcase name="correct password must be provided to delete account" file="tests/Feature/ProfileTest.php::correct password must be provided to delete account" class="Tests\Feature\ProfileTest" classname="Tests.Feature.ProfileTest" assertions="5" time="0.028892"/>
       </testsuite>
-      <testsuite name="Tests\Feature\RouteTest" file="tests/Feature/RouteTest.php" tests="3" assertions="3" errors="0" failures="0" skipped="0" time="0.077893">
-        <testcase name="it show homepage" file="tests/Feature/RouteTest.php::it show homepage" class="Tests\Feature\RouteTest" classname="Tests.Feature.RouteTest" assertions="1" time="0.029632"/>
-        <testcase name="it show login page" file="tests/Feature/RouteTest.php::it show login page" class="Tests\Feature\RouteTest" classname="Tests.Feature.RouteTest" assertions="1" time="0.026497"/>
-        <testcase name="it sent a 302 error when guests try to see boards" file="tests/Feature/RouteTest.php::it sent a 302 error when guests try to see boards" class="Tests\Feature\RouteTest" classname="Tests.Feature.RouteTest" assertions="1" time="0.021764"/>
+      <testsuite name="Tests\Feature\RouteTest" file="tests/Feature/RouteTest.php" tests="3" assertions="3" errors="0" failures="0" skipped="0" time="0.081981">
+        <testcase name="it show homepage" file="tests/Feature/RouteTest.php::it show homepage" class="Tests\Feature\RouteTest" classname="Tests.Feature.RouteTest" assertions="1" time="0.031702"/>
+        <testcase name="it show login page" file="tests/Feature/RouteTest.php::it show login page" class="Tests\Feature\RouteTest" classname="Tests.Feature.RouteTest" assertions="1" time="0.027586"/>
+        <testcase name="it sent a 302 error when guests try to see boards" file="tests/Feature/RouteTest.php::it sent a 302 error when guests try to see boards" class="Tests\Feature\RouteTest" classname="Tests.Feature.RouteTest" assertions="1" time="0.022694"/>
       </testsuite>
-      <testsuite name="Tests\Feature\TemplateTest" file="tests/Feature/TemplateTest.php" tests="3" assertions="0" errors="0" failures="0" skipped="3" time="0.061233">
-        <testcase name="it can create template" file="tests/Feature/TemplateTest.php::it can create template" class="Tests\Feature\TemplateTest" classname="Tests.Feature.TemplateTest" assertions="0" time="0.022991">
+      <testsuite name="Tests\Feature\TemplateTest" file="tests/Feature/TemplateTest.php" tests="3" assertions="0" errors="0" failures="0" skipped="3" time="0.063659">
+        <testcase name="it can create template" file="tests/Feature/TemplateTest.php::it can create template" class="Tests\Feature\TemplateTest" classname="Tests.Feature.TemplateTest" assertions="0" time="0.023795">
           <skipped/>
         </testcase>
-        <testcase name="it can edit template" file="tests/Feature/TemplateTest.php::it can edit template" class="Tests\Feature\TemplateTest" classname="Tests.Feature.TemplateTest" assertions="0" time="0.019185">
+        <testcase name="it can edit template" file="tests/Feature/TemplateTest.php::it can edit template" class="Tests\Feature\TemplateTest" classname="Tests.Feature.TemplateTest" assertions="0" time="0.019948">
           <skipped/>
         </testcase>
-        <testcase name="it can delete template" file="tests/Feature/TemplateTest.php::it can delete template" class="Tests\Feature\TemplateTest" classname="Tests.Feature.TemplateTest" assertions="0" time="0.019057">
+        <testcase name="it can delete template" file="tests/Feature/TemplateTest.php::it can delete template" class="Tests\Feature\TemplateTest" classname="Tests.Feature.TemplateTest" assertions="0" time="0.019916">
           <skipped/>
         </testcase>
       </testsuite>
