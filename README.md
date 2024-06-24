@@ -9,12 +9,6 @@
 ![Tests Skipped](https://img.shields.io/badge/tests_skipped-${{ steps.extract_test_info.outputs.skip }}-lightgrey?style=flat-square)
 
 ![Tests Failed](https://img.shields.io/badge/tests_failed-${{ steps.extract_test_info.outputs.failures }}-red?style=flat-square)
-=======
-![Tests Passed](https://img.shields.io/badge/tests_passed-0-brightgreen?style=flat-square)
-![Tests TODO](https://img.shields.io/badge/tests_todo--yellow?style=flat-square)
-![Tests Skipped](https://img.shields.io/badge/tests_skip--lightgrey?style=flat-square)
-![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
->>>>>>> 9953f046ccfa2b4766c926d6506f8e2a5b51a8af
 
 
 <p align="center">Coming soon...</p>
