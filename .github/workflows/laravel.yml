@@ -1,6 +1,6 @@
 # .github/workflows/laravel.yml
 
-name: Test Backend
+name: Laravel tests
 
 on:
   push:
