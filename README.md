@@ -3,8 +3,8 @@
 
 ## Statut des Tests
 
-- ![Tests Passed](https://img.shields.io/badge/tests_passed-0-brightgreen?style=flat-square)
-- ![Tests Skipped](https://img.shields.io/badge/tests_skipped-0-lightgrey?style=flat-square)
+- ![Tests Passed](https://img.shields.io/badge/tests_passed-174-brightgreen?style=flat-square)
+- ![Tests Skipped](https://img.shields.io/badge/tests_skipped-39-lightgrey?style=flat-square)
 - ![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
 
 
