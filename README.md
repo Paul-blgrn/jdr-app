@@ -1,13 +1,11 @@
 # The Project
 [![Laravel](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml/badge.svg?branch=dev)](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml)
 
-## Test Results
+## Statut des Tests
 
-![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)
-
-![Tests Skipped](https://img.shields.io/badge/tests_skipped-${SKIP}-lightgrey?style=flat-square)
-
-![Tests Failed](https://img.shields.io/badge/tests_failed-${FAILURES}-red?style=flat-square)
+- ![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)
+- ![Tests Skipped](https://img.shields.io/badge/tests_skipped-${SKIP}-lightgrey?style=flat-square)
+- ![Tests Failed](https://img.shields.io/badge/tests_failed-${FAILURES}-red?style=flat-square)
 
 
 
