@@ -3,10 +3,11 @@
 
 ## Test Results
 
-![Tests Passed](https://img.shields.io/badge/tests_passed--brightgreen?style=flat-square)
-![Tests TODO](https://img.shields.io/badge/tests_todo--yellow?style=flat-square)
-![Tests Skipped](https://img.shields.io/badge/tests_skip--lightgrey?style=flat-square)
-![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
+![Tests Total](https://img.shields.io/badge/tests_total-${{ steps.extract_test_info.outputs.pass }}-blue?style=flat-square)
+
+![Tests Skipped](https://img.shields.io/badge/tests_skipped-${{ steps.extract_test_info.outputs.skip }}-lightgrey?style=flat-square)
+
+![Tests Failed](https://img.shields.io/badge/tests_failed-${{ steps.extract_test_info.outputs.failures }}-red?style=flat-square)
 
 
 <p align="center">Coming soon...</p>

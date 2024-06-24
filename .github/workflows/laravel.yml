@@ -68,27 +68,8 @@ jobs:
         id: extract_test_info
         run: |
           PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
-          FAILURES=$(grep -oP '<testsuites failures="\K\d+' tests/results.xml || echo "0")
-          TOTAL=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml | head -n 1 || echo "0")
+          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
+          FAILURES=$(grep -oP '<testsuites failures="\K\d+' tests/results.xml | head -n 1 || echo "0")
           echo "::set-output name=pass::$PASS"
+          echo "::set-output name=skip::$SKIP"
           echo "::set-output name=failures::$FAILURES"
-          echo "::set-output name=total::$TOTAL"
-
-      - name: Update README with Badge URLs
-        run: |
-          PASS=${{ steps.extract_test_info.outputs.pass }}
-          FAILURES=${{ steps.extract_test_info.outputs.failures }}
-          TOTAL=${{ steps.extract_test_info.outputs.total }}
-          sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
-          sed -i "s|!\[Tests Failed\](.*)|![Tests Failed](https://img.shields.io/badge/tests_failed-${FAILURES}-red?style=flat-square)|g" README.md
-          sed -i "s|!\[Tests Total\](.*)|![Tests Total](https://img.shields.io/badge/tests_total-${TOTAL}-blue?style=flat-square)|g" README.md
-
-      - name: Commit and push updated README
-        if: ${{ github.event_name == 'push' }}
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          git add README.md
-          git commit -m "Update README with test badges"
-          git push origin HEAD:refs/heads/dev
