@@ -1,4 +1,5 @@
 # The Project
+[![Laravel](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml/badge.svg?branch=dev)](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml)
 <p align="center">Coming soon...</p>
 
 # Entity Relation Diagramm (ERD)
