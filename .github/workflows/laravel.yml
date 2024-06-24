@@ -66,27 +66,17 @@ jobs:
           fi
           cat tests/results.xml
 
-      - name: Extract test information
-        id: extract_test_info
+       - name: Extract test information
         run: |
-          PASS=$(grep -oP '(?<=<testsuites tests=")\d+' tests/results.xml || echo "0")
+          PASS=$(grep -oP '<testsuites tests="\K\d+' tests/results.xml || echo "0")
           TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")\d+' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
-          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*' tests/results.xml | wc -l || echo "0")
-
-          echo "PASS=${PASS}" > test-env.properties
-          echo "TODO=${TODO}" >> test-env.properties
-          echo "SKIP=${SKIP}" >> test-env.properties
-
-      - name: Read test information from environment file
-        run: |
-          source test-env.properties
+          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
+          echo "PASS: $PASS"
+          echo "TODO: $TODO"
+          echo "SKIP: $SKIP"
 
       - name: Update README with Badge URLs
         run: |
-          PASS=${PASS}
-          TODO=${TODO}
-          SKIP=${SKIP}
-
           sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
           sed -i "s|!\[Tests TODO\](.*)|![Tests TODO](https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square)|g" README.md
           sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square)|g" README.md
