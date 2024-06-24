@@ -67,7 +67,7 @@ jobs:
           cat tests/results.xml
 
       - name: Display current directory contents
-        run: ls -R
+        run: ls -R tests/
 
       - name: Extract test information
         run: |
