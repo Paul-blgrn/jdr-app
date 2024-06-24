@@ -27,6 +27,9 @@ jobs:
     - name: Install dependencies
       run: composer install
 
+    - name: Generate Laravel Key
+      run: php artisan key:generate
+
     - name: Run tests
       run: php artisan test
 
