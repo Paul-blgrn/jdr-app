@@ -72,9 +72,6 @@ jobs:
           PASS=$(grep -oP '(?<=testsuites tests=")\d+' tests/results.xml || echo "0")
           TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")(\d+)(?=" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
           SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
-          echo "PASS: $PASS"
-          echo "TODO: $TODO"
-          echo "SKIP: $SKIP"
           echo "::set-output name=pass::$PASS"
           echo "::set-output name=todo::$TODO"
           echo "::set-output name=skip::$SKIP"
@@ -84,23 +81,15 @@ jobs:
           PASS=${{ steps.extract_test_info.outputs.pass }}
           TODO=${{ steps.extract_test_info.outputs.todo }}
           SKIP=${{ steps.extract_test_info.outputs.skip }}
-          BADGE_PASS="![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)"
-          BADGE_TODO="![Tests TODO](https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square)"
-          BADGE_SKIP="![Tests Skipped](https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square)"
-          echo "Updating README with badges"
-          sed -i "s|!\[Tests Passed\](.*)|${BADGE_PASS}|g" README.md
-          sed -i "s|!\[Tests TODO\](.*)|${BADGE_TODO}|g" README.md
-          sed -i "s|!\[Tests Skipped\](.*)|${BADGE_SKIP}|g" README.md
+          sed -i "s|!\[Tests Passed\](.*)|![Tests Passed](https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square)|g" README.md
+          sed -i "s|!\[Tests TODO\](.*)|![Tests TODO](https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square)|g" README.md
+          sed -i "s|!\[Tests Skipped\](.*)|![Tests Skipped](https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square)|g" README.md
 
       - name: Commit and push updated README
         if: ${{ github.event_name == 'push' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add README.md
-          git add .env.testing  # Add any other necessary files
-          git add tests/results.xml
           git commit -m "Update README with test badges"
-          git push origin HEAD:refs/heads/dev
+          git push origin HEAD:refs/heads/${{ github.ref }}
