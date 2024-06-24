@@ -40,17 +40,14 @@ jobs:
         with:
           name: test-results
           path: tests/results.xml
-
       - name: Extract test count
         id: test_count
         run: echo "::set-output name=test_count::$(grep -oP '(?<=testsuites tests=\")\d+' tests/results.xml)"
-
       - name: Generate Badge
         id: generate-badge
         run: |
           echo "[![Tests](https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen)](https://github.com/Paul-blgrn/jdr-app/tree/dev)"
           echo "badge_url=https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen" >> $GITHUB_ENV
-
       - name: Upload badge
         uses: actions/upload-artifact@v2
         with:
