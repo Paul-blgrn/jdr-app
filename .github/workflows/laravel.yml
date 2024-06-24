@@ -69,12 +69,6 @@ jobs:
       - name: Check results.xml content
         run: cat tests/results.xml
 
-      - name: Debug extracted variables
-        run: |
-          echo "PASS: $PASS"
-          echo "TODO: $TODO"
-          echo "SKIP: $SKIP"
-
       - name: Extract test information
         id: extract_test_info
         run: |
@@ -84,6 +78,12 @@ jobs:
           echo "::set-output name=pass::$PASS"
           echo "::set-output name=todo::$TODO"
           echo "::set-output name=skip::$SKIP"
+
+      - name: Debug extracted variables
+        run: |
+          echo "PASS: $PASS"
+          echo "TODO: $TODO"
+          echo "SKIP: $SKIP"
 
       - name: Update README with Badge URLs
         run: |
