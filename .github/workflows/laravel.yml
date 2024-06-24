@@ -61,9 +61,12 @@ jobs:
       - name: Extract test information
         id: extract_test_info
         run: |
-          PASS=$(grep -oP '(?<=testsuites tests=")\d+' tests/results.xml)
-          TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")(\d+)(?=" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}')
-          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l)
+          PASS=$(grep -oP '(?<=testsuites tests=")\d+' tests/results.xml || echo "0")
+          TODO=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped=")(\d+)(?=" errors="0" failures="0")' tests/results.xml | awk '{s+=$1} END {print s}' || echo "0")
+          SKIP=$(grep -oP '(?<=<testsuite name=".*" tests="\d+" skipped="0" errors="0" failures="0" timestamp=").*(?=" time=)' tests/results.xml | wc -l || echo "0")
+          echo "PASS: $PASS"
+          echo "TODO: $TODO"
+          echo "SKIP: $SKIP"
           echo "::set-output name=pass::$PASS"
           echo "::set-output name=todo::$TODO"
           echo "::set-output name=skip::$SKIP"
@@ -74,9 +77,18 @@ jobs:
           PASS=${{ steps.extract_test_info.outputs.pass }}
           TODO=${{ steps.extract_test_info.outputs.todo }}
           SKIP=${{ steps.extract_test_info.outputs.skip }}
+          echo "PASS: $PASS"
+          echo "TODO: $TODO"
+          echo "SKIP: $SKIP"
           BADGE_URL="https://img.shields.io/badge/tests_passed-${PASS}-brightgreen?style=flat-square"
           BADGE_TODO_URL="https://img.shields.io/badge/tests_todo-${TODO}-yellow?style=flat-square"
           BADGE_SKIP_URL="https://img.shields.io/badge/tests_skip-${SKIP}-lightgrey?style=flat-square"
           echo "badge_url=${BADGE_URL}" >> $GITHUB_ENV
           echo "badge_todo_url=${BADGE_TODO_URL}" >> $GITHUB_ENV
           echo "badge_skip_url=${BADGE_SKIP_URL}" >> $GITHUB_ENV
+
+      - name: Display Badge URLs
+        run: |
+          echo "Tests Passed Badge URL: ${{ env.badge_url }}"
+          echo "Tests TODO Badge URL: ${{ env.badge_todo_url }}"
+          echo "Tests Skipped Badge URL: ${{ env.badge_skip_url }}"
