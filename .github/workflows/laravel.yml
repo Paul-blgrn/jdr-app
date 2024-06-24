@@ -1,6 +1,6 @@
-# .github/workflows/test.yml
+# .github/workflows/laravel.yml
 
-name: Run Tests
+name: Tests Backend
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
 
     - name: Extract test count
       id: test_count
-      run: echo "TEST_COUNT=$(vendor/bin/pest --coverage --min=85 --log-junit=tests/results.xml | grep -oP '(?<=Tests: )\d+')" >> $GITHUB_ENV
+      run: echo "TEST_COUNT=$(grep -oP '(?<=testsuites tests=\")\d+' tests/results.xml)" >> $GITHUB_ENV
 
     - name: Create badge
       uses: emibcn/badge-action@v1.3.0
