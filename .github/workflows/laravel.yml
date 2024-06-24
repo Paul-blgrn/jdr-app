@@ -33,9 +33,7 @@ jobs:
         run: php artisan key:generate --env=testing
 
       - name: Build assets with Vite
-        run: |
-          npm install
-          npm run build  # Assurez-vous que Vite est correctement configuré pour votre application
+        run: npm install && npm run build  # Assurez-vous que Vite est correctement configuré pour votre application
 
       - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
         env:
@@ -51,6 +49,14 @@ jobs:
 
       - name: Install jq
         run: sudo apt-get install -y jq
+
+      - name: Check if test results file exists
+        run: |
+          if [ ! -f tests/results.xml ]; then
+            echo "Test results file not found!"
+            exit 1
+          fi
+          cat tests/results.xml
 
       - name: Extract test information
         id: extract_test_info
