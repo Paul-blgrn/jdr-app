@@ -473,7 +473,7 @@ it('cannot leave a board if it will be empty', function () {
         'message' => 'Cannot leave an empty board.',
         'errors' => [
             'code' => [
-                'User cannot leave an ampty board.'
+                'User cannot leave an empty board.'
             ],
         ],
         'status_code'=> 403,

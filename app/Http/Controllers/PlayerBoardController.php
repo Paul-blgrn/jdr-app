@@ -181,7 +181,7 @@ class PlayerBoardController extends Controller
             return response()->json([
                 'message' => 'Cannot leave an empty board.',
                 'errors' => [
-                    'code'=> ['User cannot leave an ampty board.']
+                    'code'=> ['User cannot leave an empty board.']
                 ],
                 'status_code' => 403,
             ], 403);
