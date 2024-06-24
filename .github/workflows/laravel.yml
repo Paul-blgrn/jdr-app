@@ -85,6 +85,8 @@ jobs:
           sed -i "s|!\[Tests Skipped\](.*)|${BADGE_SKIP}|g" README.md
 
       - name: Commit and push updated README
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
