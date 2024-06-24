@@ -5,10 +5,10 @@ name: Backend Tests
 on:
   push:
     branches:
-      - '**'
+      - '**'  # Appliquer à toutes les branches
   pull_request:
     branches:
-      - '**'
+      - '**'  # Appliquer à toutes les branches
   workflow_dispatch:
 
 jobs:
@@ -42,11 +42,9 @@ jobs:
 
     - name: Generate Badge
       id: generate-badge
-      uses: badgen/badgen-action@master
-      with:
-        subject: Tests
-        status: ${{ steps.test_count.outputs.test_count }}
-        color: green
+      run: |
+        echo "[![Tests](https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen)](https://github.com/your/repository)"
+        echo "badge_url=https://img.shields.io/badge/Tests-${{ steps.test_count.outputs.test_count }}-brightgreen" >> $GITHUB_ENV
 
     - name: Upload badge
       uses: actions/upload-artifact@v2
