@@ -1,15 +1,10 @@
 # The Project
-[![Laravel](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml/badge.svg?branch=dev)](https://github.com/Paul-blgrn/jdr-app/actions/workflows/laravel.yml)
+<p align="center">Coming soon...</p>
 
 ## Statut des Tests
-
 - ![Tests Passed](https://img.shields.io/badge/tests_passed-0-brightgreen?style=flat-square)
 - ![Tests Skipped](https://img.shields.io/badge/tests_skipped-0-lightgrey?style=flat-square)
 - ![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
-
-
-
-<p align="center">Coming soon...</p>
 
 # Entity Relation Diagramm (ERD)
 ![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/9b68d15d-c192-4159-805c-30d5d78ebe20)
