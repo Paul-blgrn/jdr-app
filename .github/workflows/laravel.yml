@@ -66,6 +66,15 @@ jobs:
           fi
           cat tests/results.xml
 
+      - name: Check results.xml content
+        run: cat tests/results.xml
+
+      - name: Debug extracted variables
+        run: |
+          echo "PASS: $PASS"
+          echo "TODO: $TODO"
+          echo "SKIP: $SKIP"
+
       - name: Extract test information
         id: extract_test_info
         run: |
