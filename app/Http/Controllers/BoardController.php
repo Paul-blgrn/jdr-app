@@ -62,16 +62,16 @@ class BoardController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($boardId) {
-        // Récupérer l'utilisateur authentifié
+        // Retrieve the authenticated user
         $user = auth()->user();
 
-        // Récupérer le board en question
+        // Retrieve the board
         $board = Board::findOrFail($boardId);
 
-        // Récupérer l'usilisateur dans la board
+        // Retrieve the user from the board
         $foundUser = $board->users()->where('user_id', $user->id)->first();
 
-        // Si l'utilisateur n'a pas le role "master", on renvoie une erreur
+        // If user doesn't hare "master" role we return an error
         if ($foundUser->pivot->role !== "master") {
             return response()->json([
                 'response' => [

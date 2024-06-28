@@ -4,40 +4,27 @@ use App\Models\Board;
 use App\Models\User;
 
 use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
 use function Pest\Laravel\withoutExceptionHandling;
 
-it("can create board", function () {
-    $user = User::factory()->create();
-    $board = Board::factory()->create();
-
-    $this->actingAs($user)
-        ->post("/api/boards/add",
-            [
-
-            ]);
-})->todo();
-
-test("the creator of board have role master", function () {
-
-})->todo();
 
 test("user with role player cannot delete à board", function () {
-    // Créer deux Utilisateurs et une Board
-    $user = User::factory()->create();
+    // Create one master, one user and one board
     $master = User::factory()->create();
+    $user = User::factory()->create();
     $board = Board::factory()->create();
 
-    // Attacher l'utilisateur $master à la Board et lui attribuer le role master
+    // Attach the user $master to the Board and assign him the role master
     $board->users()->attach($master->id, ["role" => "master"]);
-    // Attacher l'utilisateur $user à la Board et lui attribuer le role player
+    // Attach the user $user to the Board and assign him the role player
     $board->users()->attach($user->id, ["role" => "player"]);
 
+    // Simulate user login as $user and try to delete the board
+    // Return status code 403 (forbidden for $user)
     $response = $this->actingAs($user)
         ->delete("/api/board/delete/{$board->id}")
         ->assertStatus(403);
 
-    // Vérifier le contenu de la réponse JSON
+    // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'No permission',
@@ -46,7 +33,7 @@ test("user with role player cannot delete à board", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -54,17 +41,23 @@ test("user with role player cannot delete à board", function () {
             'status_code',
         ]
     ]);
+
+    // Reload the board with its users to ensure the relationship is up-to-date
+    $board->refresh();
+
+    // We explicitly check in the database that the board still exists
+    $this->assertDatabaseHas('boards', [
+        'id' => $board->id,
+    ]);
+
+    // We explicitly check in the database that the users are still in the board
+    $board->users()->each(function (User $user) use ($board) {
+        $this->assertDatabaseHas('board_user', [
+            'board_id' => $board->id,
+            'user_id' => $user->id,
+        ]);
+    });
+
+    // Check that there are still two users in the board loaded in relation
+    expect($board->users)->toHaveCount(2);
 });
-
-it("can delete a board if user have role master", function() {
-    // créer un utilisateur et une board
-    $user = User::factory()->create();
-    $board = Board::factory()->create();
-
-    // Attacher l'utilisateur à la Board et lui attribuer le role master
-    $board->users()->attach($user->id, ["role" => "master"]);
-
-    $response = $this->actingAs($user)
-        ->delete("/api/board/delete/{$board->id}")
-        ->assertStatus(200);
-})->todo();
