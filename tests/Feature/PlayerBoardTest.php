@@ -12,8 +12,10 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\withoutExceptionHandling;
 
 it("sent a 404 error when accessing a board that do not exist", function () {
+    // Create one user
     $user = User::factory()->make();
 
+    // trying to display a board that doesn't exist and waiting for a 404 code
     actingAs($user)
     ->get("/api/board/1")
     ->assertStatus(404);
@@ -24,9 +26,17 @@ it("sent a 404 error when accessing a board that do not exist", function () {
 });
 
 it("can join a board with right code", function () {
+    // Create one User with role master
+    $master = User::factory()->create();
+    // Create one User with role player
     $user = User::factory()->create();
+    // Create one Board
     $board = Board::factory()->create();
 
+    // Attach $master to the board with role master
+    $board->users()->attach($master->id, ['role' => 'master']);
+
+    // try to join a board with the code $code
     $response = $this->actingAs($user)
         ->post("/api/boards/join",
             [
@@ -34,7 +44,7 @@ it("can join a board with right code", function () {
             ])
         ->assertStatus(201);
 
-    // Vérifier que la réponse est bien en JSON et contient les données attendues
+    // Check that the response is in JSON and contains the expected data
     $response->assertJson([
         'response' => [
             'status_title' => 'Success',
@@ -43,7 +53,7 @@ it("can join a board with right code", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -52,37 +62,39 @@ it("can join a board with right code", function () {
         ]
     ]);
 
-    // Vérifier que l'utilisateur a bien été ajouté au board
+    // Check that the user has been added to the board
     $this->assertDatabaseHas("board_user", [
         "board_id"=> $board->id,
         "user_id" => $user->id,
     ]);
 
-    expect($user->boards)->toHaveCount(1);
+    // Ensure that the board contains 2 users
+    expect($board->users)->toHaveCount(2);
+    // Ensure that the user $user has the board $board
     expect($user->boards->contains($board))->toBeTrue();
 });
 
 it("cannot join boards with wrong or empty invite code", function (string $code) {
-    // Créer un utilisateur
+    // Create one user
     $user = User::factory()->create();
 
-    // Simuler la connexion de l'utilisateur et envoyer un code
+    // Simulate user login and send a code
     $response = $this->actingAs($user)
         ->post("/api/boards/join",
             [
                 'code' => $code,
             ]);
 
-    // Vérifier le statut de la réponse pour indiquer une erreur de validation
+    // Check response status to indicate validation error
     $response->assertStatus(422);
 
-    $request = new FormRequest();
+    $request = Request::create('/api/boards/join', 'POST', ['code'  => $code]);
     $validator = Validator::make($request->all(), [
         'code' => 'required|string',
     ]);
 
-    // Vérifier que la réponse est bien en JSON et contient les données attendues
-    if ($code == '') {
+    // Check that the response is in JSON and contains the expected data
+    if (empty($code)) {
         $response->assertJson([
             'response' => [
                 'status_code' => 422,
@@ -100,7 +112,7 @@ it("cannot join boards with wrong or empty invite code", function (string $code)
         ]);
     }
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -109,23 +121,23 @@ it("cannot join boards with wrong or empty invite code", function (string $code)
         ]
     ]);
 
-    // Recharger l'utilisateur pour s'assurer que les relations sont mises à jour
+    // Reload user to ensure relationships are updated
     $user->refresh();
 
-    // Vérifier que l'utilisateur n'a pas rejoint de boards
+    // Verify that the user has not joined any boards
     expect($user->boards)->toHaveCount(0);
 
 })->with(["12345", "bonjour", ""]);
 
 it("cannot join a full board", function () {
-    // Créer 1 utilisateur (master)
+    // Create 1 user (master)
     $user = User::factory()->create();
-    // Créer 3 utilisateurs (players)
+    // Create 3 users (players)
     $users = User::factory(3)->create();
-    // Créer un autre utilisateur
+    // Create another user (the one who will try to join the full board)
     $userToJoin = User::factory()->create();
 
-    // Créer un Board avec une capacité de 4
+    // Create a Board with capacity for 4 users
     $board = Board::factory()->create([
         'name' => 'table pleine',
         'description' => 'la table est pleine et doit exclure toute personne qui essaye de la rejoindre',
@@ -133,11 +145,11 @@ it("cannot join a full board", function () {
         'capacity' => 4,
     ]);
 
-    // Attacher les utilisateurs a la Board avec leur rôles
+    // Attach users to the Board with their roles
     $board->users()->attach($user, ['role'=> 'master']);
     $board->users()->attach($users, ['role'=> 'player']);
 
-    // Simuler la tentative de rejoindre le board par l'utilisateur
+    // Simulate the user's attempt to join the board
     $response = $this->actingAs($userToJoin)
         ->post("/api/boards/join",
             [
@@ -145,10 +157,10 @@ it("cannot join a full board", function () {
             ])
         ->assertStatus(403);
 
-    // Rafraîchir le modèle du board
+    // Refresh the board model
     $board->refresh();
 
-    // Vérifier que la réponse est bien en JSON et contient les données attendues
+    // Check that the response is in JSON and contains the expected data
     $response->assertJson([
         'response' => [
             'status_title' => 'No permission',
@@ -157,7 +169,7 @@ it("cannot join a full board", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -166,16 +178,16 @@ it("cannot join a full board", function () {
         ]
     ]);
 
-    // Vérifier le nombre d'utilisateurs sur le board n'a pas changé
+    // Check the number of users on the board has not changed
     expect($board->users)->toHaveCount(4);
 
-    // Vérifier que l'utilisateur qui a essayé de rejoindre n'est pas dans la table pivot
+    // Check that the user who tried to join is not in the pivot table
     $this->assertDatabaseMissing('board_user', [
         'board_id' => $board->id,
         'user_id' => $userToJoin->id,
     ]);
 
-    // Vérifier les rôles des utilisateurs sur le board
+    // Check user roles on the board
     $board->users()->each(function (User $users) {
         $role = $users->pivot->role;
         if ($users->id == 1) {
@@ -187,16 +199,16 @@ it("cannot join a full board", function () {
 });
 
 it("displays all the user boards and does not send back other players boards", function () {
-    // Créer un utilisateur et lui associer 3 Boards
+    // Create one user and associate 3 Boards with him
     $user = User::factory()->hasAttached(Board::factory(3))->create();
 
-    // On simule la connexion de $user et on s'assure de la réponse 200 sur "/api/boards"
+    // Simulate the connection of $user and ensure the response 200 on "/api/boards"
     $response = $this
         ->actingAs($user)
         ->get('/api/boards')
         ->assertStatus(200);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         '*' => [
             'id',
@@ -215,31 +227,31 @@ it("displays all the user boards and does not send back other players boards", f
         ],
     ]);
 
-    // Récupérer le contenu de la réponse en JSON
+    // Get response content in JSON
     $data = $response->json();
 
-    // Vérifier que la réponse n'est pas vide
+    // Check that the response is not empty
     expect($data)->not->toBeEmpty();
 
-    // Vérifier que $data contient le bon nombre de boards
+    // Check that $data contains the right number of boards
     expect($data)->toHaveCount($user->boards->count());
 
     $pluckedData = collect($data)->pluck('id')->toArray();
     $pluckedUser = $user->boards->pluck('id')->toArray();
-    // Vérifier les IDS
+    // Check IDS
     expect($pluckedData)->toEqual($pluckedUser);
 
-    // Vérifier que la réponse contient les informations exactes
+    // Verify that the response contains the correct information
     $user->boards->each(function (Board $board) use ($data) {
-        // Récupérer le premier élément de $data
+        // Get the first element of $data
         $boardData = collect($data)->firstWhere('id', $board->id);
 
-        // Vérifier que les détails du board sont corrects
+        // Check that the board details are correct
         expect($boardData['name'])->toBe($board->name);
         expect($boardData['description'])->toBe($board->description);
         expect($boardData['capacity'])->toBe($board->capacity);
 
-        // Vérifier qu'il n'y a qu'un seul utilisateur
+        // Check that there is only one user
         expect($boardData['users_count'])->toEqual(1);
     });
 });
@@ -255,7 +267,7 @@ it('displays the information of all players associated with a board', function (
         ->get('/api/board/'. $board->id)
         ->assertStatus(200);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'users' => [
             '*' => [
@@ -275,16 +287,16 @@ it('displays the information of all players associated with a board', function (
 
     $data = $response->json();
 
-    // Vérifier que $data n'est pas vide
+    // Check that $data is not empty
     expect($data)->not->toBeEmpty();
 
 
-    // Vérifier que $data contient le bon nombre de users
+    // Check that $data contains the correct number of users
     expect($data['users'])->toHaveCount(3);
 
     $pluckedData = collect($data['users'])->pluck('id')->toArray();
     $pluckedUser = $board->users->pluck('id')->toArray();
-    // Vérifier les IDS
+    // Check IDS
     expect($pluckedData)->toEqual($pluckedUser);
 
     $userRoles = collect($data['users'])->mapWithKeys(function ($user) {
@@ -338,48 +350,55 @@ it("displays a board with details", function () {
 
     $data = $response->json();
 
-    // Vérifier que la réponse n'est pas vide
+    // Check that the response is not empty
     expect($data)->not->toBeEmpty();
 
-    // Vérifier que $data contient le bon nombre de users
+    // Check that $data contains the correct number of users
     expect($data['users'])->toHaveCount(2);
 
     $pluckedData = collect($data['users'])->pluck('id')->toArray();
     $pluckedUser = $board->users()->pluck('user_id')->toArray();
-    // Vérifier les IDS
+    // Check IDS
     expect($pluckedData)->toEqual($pluckedUser);
 
-    // Vérifier que les détails du board sont corrects
+    // Check that the board details are corrects
     expect($data['name'])->toEqual($board->name);
     expect($data['description'])->toEqual($board->description);
     expect($data['capacity'])->toEqual($board->capacity);
-    //dd($data['users'][0]['name']);
+
     foreach ($data['users'] as $userData) {
         $originalUsers = $user->firstWhere('id', $userData['id']);
         expect($userData['name'])->toBe($originalUsers->name);
 
-        // Vérifier le rôle des utilisateurs
+        // Check user roles
         $expectedRole = $board->users()->where('user_id', $userData['id'])->first()->pivot->role;
         expect($userData['pivot']['role'])->toBe($expectedRole);
     }
 });
 
 it("can leave a board successfully", function () {
-    // Créer 3 utilisateurs
-    $users = User::factory(3)->create();
-    // Créer un Board et attacher les utilisateurs au board
+    // Create four Users
+    $users = User::factory(4)->create();
+    // Create one Board
     $board = Board::factory()->create();
-    $board->users()->attach($users);
 
-    // Utilisateur qui va quitter le board
-    $userToLeave = $users->first();
+    // Attach the first user with role "master"
+    $board->users()->attach($users->first()->id, ['role' => 'master']);
 
-    // Effectuer la requête pour détacher l'utilisateur du board
-    $response = $this->actingAs($userToLeave)
+    // Attach the remaining users with role "player"
+    $users->skip(1)->each(function ($user) use ($board) {
+        $board->users()->attach($user->id, ['role' => 'player']);
+    });
+
+    // User who will leave the board
+    $userWhoLeave = $users->get(1);
+
+    // Perform the request to detach the user from the board
+    $response = $this->actingAs($userWhoLeave)
         ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(200);
 
-    // Vérifier le contenu de la réponse JSON
+    // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'Success',
@@ -388,7 +407,7 @@ it("can leave a board successfully", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -397,43 +416,49 @@ it("can leave a board successfully", function () {
         ]
     ]);
 
-    // Vérifier explicitement que l'utilisateur a bien été détaché du Board
+    // Explicitly check in database that the user has been detached from the Board
     $this->assertDatabaseMissing('board_user', [
         'board_id' => $board->id,
-        'user_id' => $userToLeave->id,
+        'user_id' => $userWhoLeave->id,
     ]);
 
-
-
-    // Vérifier que les autres utilisateurs sont toujours attachés
-    // a la board
-    $users->skip(1)->each(function (User $user) use ($board) {
+    // Filter users to exclude the one who left and
+    // check explicitly in database that others users are still attached to the board
+    $users->filter(function (User $user) use ($userWhoLeave) {
+        return $user->id !== $userWhoLeave->id;
+    })->each(function (User $user) use ($board) {
         $this->assertDatabaseHas('board_user', [
             'board_id'=> $board->id,
             'user_id'=> $user->id,
         ]);
     });
 
-    // Vérifier que le Board à le bon nombre de users
-    expect($board->users)->toHaveCount(2);
+    // Reload the board with its users to ensure the relationship is up-to-date
+    $board->refresh();
+
+    // Check that the Board has the right number of users
+    expect($board->users)->toHaveCount(3);
 });
 
 it('can leave a board successfully if other users remain', function () {
-    // Créer un utilisateur
-    $user = User::factory()->create();
-    // Créer un autre utilisateur
-    $anotherUser = User::factory()->create();
-
-    // Créer un Board et attacher cet utilisateur
+    // create one user (it will be the master of the board)
+    $master = User::factory()->create();
+    // create another user (it will be the player who leave the board)
+    $userWhoLeave = User::factory()->create();
+    // Create one board
     $board = Board::factory()->create();
-    $board->users()->attach([$user->id, $anotherUser->id]);
 
-    // Simuler la tentative de quitter le board par l'utilisateur
-    $response = $this->actingAs($user)
+    // Attach the first user with role "master"
+    $board->users()->attach($master->id, ['role' => 'master']);
+    // Attach the second user with role "player"
+    $board->users()->attach($userWhoLeave->id, ['role' => 'player']);
+
+    // Simulate the user's attempt to leave the board
+    $response = $this->actingAs($userWhoLeave)
         ->delete('/api/board/leave/' . $board->id)
         ->assertStatus(200);
 
-    // Vérifier le contenu de la réponse JSON
+    // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'Success',
@@ -442,7 +467,7 @@ it('can leave a board successfully if other users remain', function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -451,39 +476,39 @@ it('can leave a board successfully if other users remain', function () {
         ]
     ]);
 
-    // Rafraîchir le modèle du board
+    // Refresh the board model
     $board->refresh();
 
-    // Vérifier que l'utilisateur $user n'est plus présent
-    // dans la board
-    expect($board->users)->not()->toContain($user);
+    // Check that user who left is no longer present in the board
+    expect($board->users)->not()->toContain($userWhoLeave);
 
-    // Vérifier explicitement dans la base de donnée
-    // que l'utilisateur $anotherUser est encore présent
+    // Explicitly check in the database that the user $master is still present
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
-        'user_id' => $anotherUser->id,
+        'user_id' => $master->id,
     ]);
 
-    // Compter le nombre d'utilisateurs dans la board
-    // nous attendons un seul utilisateur dans ce cas
+    // Count the number of users on the board
+    // we expect only one user in this case
     expect($board->users)->toHaveCount(1);
 });
 
-it("cannot leave a board if it will be empty", function () {
-    // Créer un utilisateur
+it('cannot leave a board if it will be empty', function () {
+    // Create one User
     $user = User::factory()->create();
-
-    // Créer un Board et attacher cet utilisateur
+    // Create one Board
     $board = Board::factory()->create();
-    $board->users()->attach($user->id);
 
-    // Utilisateur qui essaie de quitter le board et échoue car cela le rendrait vide
+    // Attach user to the board with role "player" in this case
+    // because an user with the role "master"  will not be able to leave the board in any case
+    $board->users()->attach($user->id, ['role' => 'player']);
+
+    // simulate the user trying to leave the board and failing because it would make it empty
     $response = $this->actingAs($user)
         ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(403);
 
-    // Vérifier le contenu de la réponse JSON
+    // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'No permission',
@@ -492,7 +517,7 @@ it("cannot leave a board if it will be empty", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -501,16 +526,15 @@ it("cannot leave a board if it will be empty", function () {
         ]
     ]);
 
-    // Rafraîchir le modèle du board
+    // Refresh the board model
     $board->refresh();
 
-    // Récupérer les IDS des utilisateurs de la board et
-    // Vérifier que l'autre utilisateur est toujours dans le board
+    // Retrieve the IDS of the board users and
+    // Check that the other user is still on the board
     $pluckedBoard = $board->users->pluck('id')->toArray();
     expect($pluckedBoard)->toContain($user->id);
 
-    // Vérifier explicitement dans la base de données que
-    // $anotherUser est encore présent
+    // Explicitly check in the database that $user is still here
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $user->id,
@@ -521,26 +545,29 @@ it('returns 404 if board that user try to leave does not exist', function () {
     $user = User::factory()->create();
     $invalidBoardId = 9999;
 
-    // Utilisateur qui essaie de quitter un board inexistant
+    // simulate an user trying to leave a non-existent board
     $this->actingAs($user)
         ->delete("/api/board/leave/{$invalidBoardId}")
         ->assertStatus(404);
 });
 
 it("cannot leave a board if user is not a member", function () {
+    // Create one User (which is a member of the board)
     $user = User::factory()->create();
-    $anotherUser = User::factory()->create();
+    // Create another User (which is not a member of the board)
+    $notAMember = User::factory()->create();
+    // Create one Board
     $board = Board::factory()->create();
 
-    // Attacher un seul utilisateur au board
-    $board->users()->attach($user->id);
+    // Attach $user to the board with role "master"
+    $board->users()->attach($user->id, ['role' => 'master']);
 
-    // L'autre utilisateur qui essaie de quitter le board auquel il n'appartient pas
-    $response = $this->actingAs($anotherUser)
+    // simulate an user trying to leave a board which it's not a member
+    $response = $this->actingAs($notAMember)
         ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(403);
 
-    // Vérifier le contenu de la réponse JSON
+    // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'No permission',
@@ -549,7 +576,7 @@ it("cannot leave a board if user is not a member", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -560,21 +587,25 @@ it("cannot leave a board if user is not a member", function () {
 });
 
 it("cannot leave a board if user have role master", function () {
-    // créer deux utilisateurs et une board
+    // Create one User (who will try to leave the board)
     $userToLeave = User::factory()->create();
-    $anotherUser = User::factory()->create();
+    // Create one User (who will stay in the board)
+    $user = User::factory()->create();
+    // Create one Board
     $board = Board::factory()->create();
 
-    // Attacher les utilisateurs à la Board
-    // Attribuer le role master à $user et le role player à $anotherUser
+    // Attach $userToLeave to the board with role "master"
     $board->users()->attach($userToLeave->id, ["role" => "master"]);
-    $board->users()->attach($anotherUser->id, ["role" => "player"]);
+    // Attach $user to the board with role "player"
+    $board->users()->attach($user->id, ["role" => "player"]);
 
+    // simulate an attempt to leave the board while having the role "master"
+    // we return a 403 error in this case
     $response = $this->actingAs($userToLeave)
         ->delete("/api/board/leave/{$board->id}")
         ->assertStatus(403);
 
-    // Vérifier le contenu de la réponse JSON
+    // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'No permission',
@@ -583,7 +614,7 @@ it("cannot leave a board if user have role master", function () {
         ]
     ]);
 
-    // Vérifier la structure de la réponse JSON
+    // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -592,14 +623,12 @@ it("cannot leave a board if user have role master", function () {
         ]
     ]);
 
-    // On vérifie explicitement en base de donnée que
-    // userToLeave soit encore sur sa Board
+    // We explicitly check in the database that $userToLeave is still on the Board
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $userToLeave->id,
     ]);
 
-    // On attend qu'il reste 2 utilisateurs
-    // car le role "master" ne peut pas quitter son board
+    // We expect 2 user on the board because the master of the board can't leave it
     expect($board->users)->toHaveCount(2);
 });
