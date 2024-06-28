@@ -15,11 +15,12 @@ it("sent a 404 error when accessing a board that do not exist", function () {
     // Create one user
     $user = User::factory()->make();
 
-    // trying to display a board that doesn't exist and waiting for a 404 code
+    // the user tries to access a board that does not exist, a 404 error is returned
     actingAs($user)
     ->get("/api/board/1")
     ->assertStatus(404);
 
+    // Same case here but with different uri
     actingAs($user)
     ->get("/api/board/bonjour")
     ->assertStatus(404);
@@ -256,14 +257,25 @@ it("displays all the user boards and does not send back other players boards", f
     });
 });
 
-it('displays the information of all players associated with a board', function () {
+it('displays all users associated with a board', function () {
+    // Create three Users
     $users = User::factory(3)->create();
+    // Create one Board
     $board = Board::factory()->create();
 
-    $board->users()->attach($users[0]->id, ['role' => 'master']);
-    $board->users()->attach([$users[1]->id, $users[2]->id], ['role' => 'player']);
+    // Attach the first user to the board and assign him the role "master"
+    $board->users()->attach($users->first()->id, ['role' => 'master']);
+    // Attach the remaining users with role "player"
+    $users->skip(1)->each(function ($user) use ($board) {
+        $board->users()->attach($user->id, ['role' => 'player']);
+    });
 
-    $response = $this->actingAs($board->users->first())
+    // Select one user
+    $user = $users->get(1);
+
+    // Simulate $user connection and try to display board information
+    // In this case we expect a status code 200
+    $response = $this->actingAs($user)
         ->get('/api/board/'. $board->id)
         ->assertStatus(200);
 
@@ -285,27 +297,35 @@ it('displays the information of all players associated with a board', function (
         ],
     ]);
 
+    // Transform response to JSON
     $data = $response->json();
 
     // Check that $data is not empty
     expect($data)->not->toBeEmpty();
 
-
     // Check that $data contains the correct number of users
     expect($data['users'])->toHaveCount(3);
 
+    // Collecting IDs from $data['users']
     $pluckedData = collect($data['users'])->pluck('id')->toArray();
+    // Collecting IDs from $board->users
     $pluckedUser = $board->users->pluck('id')->toArray();
-    // Check IDS
+    // compare user IDs associated with a board
     expect($pluckedData)->toEqual($pluckedUser);
 
+    // Create a collection of user roles mapped by user IDs from the JSON response data
     $userRoles = collect($data['users'])->mapWithKeys(function ($user) {
         return [$user['id'] => $user['pivot']['role']];
     });
 
-    expect($userRoles[$users[0]->id])->toBe('master');
-    expect($userRoles[$users[1]->id])->toBe('player');
-    expect($userRoles[$users[2]->id])->toBe('player');
+    // test users roles
+    expect($userRoles[$users->first()->id])->toBe('master');
+
+    // Skip the first element in the collection $userRoles and iterate over the remaining elements.
+    $userRoles->skip(1)->each(function ($role) {
+        // Assert that each $role is equal to 'player'.
+        expect($role)->toBe('player');
+    });
 
     foreach ($data['users'] as $userData) {
         $originalUser = $users->firstWhere('id', $userData['id']);
@@ -313,41 +333,48 @@ it('displays the information of all players associated with a board', function (
     }
 });
 
-it("displays a board with details", function () {
-    $user = User::factory(2)->create();
+it('displays a board with details', function () {
+    // Create two Users
+    $users = User::factory(2)->create();
+    // Create one Board
     $board = Board::factory()->create();
 
-    $board->users()->attach($user[0]->id, ["role"=> "master"]);
-    $board->users()->attach($user[1]->id, ["role"=> "player"]);
+    // Attach first user with role "master"
+    $board->users()->attach($users->first()->id, ["role"=> "master"]);
+    // Attach last user with role "player"
+    $board->users()->attach($users->last()->id, ["role"=> "player"]);
 
-    $response = $this->actingAs($user[0])
+
+    $response = $this->actingAs($users->first())
         ->get("/api/board/". $board->id)
         ->assertStatus(200);
 
-        $response->assertJsonStructure([
-            'id',
-            'name',
-            'description',
-            'capacity',
-            'code',
-            'created_at',
-            'updated_at',
-            'users' => [
-                '*' => [
-                    'id',
-                    'name',
-                    'email',
-                    'created_at',
-                    'updated_at',
-                    'pivot' => [
-                        'board_id',
-                        'user_id',
-                        'role',
-                    ],
+    // Check JSON response structure
+    $response->assertJsonStructure([
+        'id',
+        'name',
+        'description',
+        'capacity',
+        'code',
+        'created_at',
+        'updated_at',
+        'users' => [
+            '*' => [
+                'id',
+                'name',
+                'email',
+                'created_at',
+                'updated_at',
+                'pivot' => [
+                    'board_id',
+                    'user_id',
+                    'role',
                 ],
             ],
-        ]);
+        ],
+    ]);
 
+    // Transform response to JSON
     $data = $response->json();
 
     // Check that the response is not empty
@@ -356,9 +383,11 @@ it("displays a board with details", function () {
     // Check that $data contains the correct number of users
     expect($data['users'])->toHaveCount(2);
 
+    // Collecting IDs from $data['users']
     $pluckedData = collect($data['users'])->pluck('id')->toArray();
+    // Collecting IDs from $board->users
     $pluckedUser = $board->users()->pluck('user_id')->toArray();
-    // Check IDS
+    // compare user IDs associated with a board
     expect($pluckedData)->toEqual($pluckedUser);
 
     // Check that the board details are corrects
@@ -367,7 +396,7 @@ it("displays a board with details", function () {
     expect($data['capacity'])->toEqual($board->capacity);
 
     foreach ($data['users'] as $userData) {
-        $originalUsers = $user->firstWhere('id', $userData['id']);
+        $originalUsers = $users->firstWhere('id', $userData['id']);
         expect($userData['name'])->toBe($originalUsers->name);
 
         // Check user roles
