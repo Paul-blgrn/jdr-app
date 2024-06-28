@@ -61,3 +61,39 @@ test("user with role player cannot delete à board", function () {
     // Check that there are still two users in the board loaded in relation
     expect($board->users)->toHaveCount(2);
 });
+
+it("can delete a board if user have role master", function() {
+    // Create one master, one user and one board
+    $master = User::factory()->create();
+    $user = User::factory()->create();
+    $board = Board::factory()->create();
+
+    // Attach the user $master to the Board and assign him the role master
+    $board->users()->attach($master->id, ["role" => "master"]);
+    // Attach the user $user to the Board and assign him the role player
+    $board->users()->attach($user->id, ["role" => "player"]);
+
+    $response = $this->actingAs($master)
+        ->delete("/api/board/delete/{$board->id}")
+        ->assertStatus(200);
+
+
+})->todo();
+
+it("can create board", function () {
+    $user = User::factory()->create();
+    $board = Board::factory()->create();
+
+    $this->actingAs($user)
+        ->post("/api/boards/add",
+            [
+
+            ]);
+})->todo();
+
+it('assign roles correctly when board created', function () {
+})->todo();
+
+test("the creator of board have role master", function () {
+
+})->todo();
