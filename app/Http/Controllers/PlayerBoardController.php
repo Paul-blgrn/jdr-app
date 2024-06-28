@@ -15,11 +15,10 @@ class PlayerBoardController extends Controller
      */
     public function index()
     {
-        // Récupère l'utilisateur connecté
+        // Retreive authenticated user
         $user = auth()->user();
 
         $boards = $user->boards()->withCount('users')->get();
-        //dd($boards->toJson());
         return $boards->toJson();
     }
 
