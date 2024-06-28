@@ -395,12 +395,16 @@ it('displays a board with details', function () {
     expect($data['description'])->toEqual($board->description);
     expect($data['capacity'])->toEqual($board->capacity);
 
+    // Iterate over each user data in the $data['users'] array returned from the API response
     foreach ($data['users'] as $userData) {
+        // Retrieve the original user model from the $users collection by matching IDs
         $originalUsers = $users->firstWhere('id', $userData['id']);
+        // Assert that the name of the user in the API response matches the name of the original user
         expect($userData['name'])->toBe($originalUsers->name);
 
-        // Check user roles
+        // Retrieve the expected role of the user in the board from the database using the pivot table relationship
         $expectedRole = $board->users()->where('user_id', $userData['id'])->first()->pivot->role;
+        // Assert that the role of the user in the API response matches the expected role from the database
         expect($userData['pivot']['role'])->toBe($expectedRole);
     }
 });
