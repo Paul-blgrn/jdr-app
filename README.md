@@ -3,7 +3,7 @@
 
 ## Statut des Tests
 - ![Tests Passed](https://img.shields.io/badge/tests_passed-177-brightgreen?style=flat-square)
-- ![Tests Skipped](https://img.shields.io/badge/tests_skipped-42-lightgrey?style=flat-square)
+- ![Tests Skipped](https://img.shields.io/badge/tests_skipped-36-lightgrey?style=flat-square)
 - ![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
 
 # Entity Relation Diagramm (ERD)
