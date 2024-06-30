@@ -2,13 +2,10 @@
 
 use App\Models\Board;
 use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Validator;
 
 use function Pest\Laravel\actingAs;
-use function Pest\Laravel\assertDatabaseMissing;
-use function Pest\Laravel\get;
 use function Pest\Laravel\withoutExceptionHandling;
 
 it("sent a 404 error when accessing a board that do not exist", function () {
@@ -75,7 +72,7 @@ it("can join a board with right code", function () {
     expect($user->boards->contains($board))->toBeTrue();
 });
 
-it("cannot join boards with wrong or empty invite code", function (string $code) {
+it('cannot join boards with wrong or empty invite code', function (string $code) {
     // Create one user
     $user = User::factory()->create();
 
@@ -100,7 +97,7 @@ it("cannot join boards with wrong or empty invite code", function (string $code)
             'response' => [
                 'status_code' => 422,
                 'status_title' => 'Validation Error',
-                'status_message' => $validator->errors()->getMessages(),
+                'status_message' => $validator->errors()->toArray(),
             ]
         ]);
     } else {
@@ -116,9 +113,9 @@ it("cannot join boards with wrong or empty invite code", function (string $code)
     // Check JSON response structure
     $response->assertJsonStructure([
         'response' => [
+            'status_code',
             'status_title',
             'status_message',
-            'status_code',
         ]
     ]);
 

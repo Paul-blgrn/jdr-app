@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->integer('capacity')->default(2);
-            $table->string('code', 10);
+            $table->string('code', 10)->unique();
             $table->timestamps();
         });
     }

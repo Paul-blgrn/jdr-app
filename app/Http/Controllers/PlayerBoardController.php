@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class PlayerBoardController extends Controller
 {
@@ -36,8 +34,8 @@ class PlayerBoardController extends Controller
     public function store(Request $request)
     {
         // Validation des données
-        $validator = \Validator::make($request->all(), [
-            'code' => 'required|string',
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|string'
         ]);
 
         // Si la validation échoue, on renvoie une erreur
@@ -45,7 +43,7 @@ class PlayerBoardController extends Controller
             return response()->json([
                 'response' => [
                     'status_title' => 'Validation Error',
-                    'status_message' => $validator->errors()->getMessages(),
+                    'status_message' => $validator->errors()->toArray(),
                     'status_code' => 422,
                 ]
             ], 422);
