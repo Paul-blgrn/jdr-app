@@ -3,7 +3,6 @@
 use App\Models\Board;
 use App\Models\User;
 
-use function Pest\Laravel\actingAs;
 use function Pest\Laravel\withoutExceptionHandling;
 
 
@@ -62,7 +61,7 @@ test("user with role player cannot delete à board", function () {
     expect($board->users)->toHaveCount(2);
 });
 
-it("can delete a board if user have role master", function() {
+it('can delete a board if have role master', function() {
     // Create one master, one user and one board
     $master = User::factory()->create();
     $user = User::factory()->create();
@@ -77,19 +76,96 @@ it("can delete a board if user have role master", function() {
         ->delete("/api/board/delete/{$board->id}")
         ->assertStatus(200);
 
+    // Check JSON response content
+    $response->assertJson([
+        'response' => [
+            'status_title' => 'Success',
+            'status_message' => 'The board ha been deleted successfully.',
+            'status_code' => 200,
+        ]
+    ]);
 
-})->todo();
+    // Check JSON response structure
+    $response->assertJsonStructure([
+        'response' => [
+            'status_title',
+            'status_message',
+            'status_code',
+        ]
+    ]);
 
-it("can create board", function () {
+    $this->assertDatabaseMissing('boards', [
+        'id' => $board->id
+    ]);
+
+    $this->assertDatabaseMissing('board_user', [
+        'board_id' => $board->id,
+    ]);
+
+    $board->users->each(function($user) {
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    });
+
+});
+
+test('user can create a board', function () {
+    // Create one User
     $user = User::factory()->create();
-    $board = Board::factory()->create();
 
-    $this->actingAs($user)
-        ->post("/api/boards/add",
-            [
+    // Simulate a user who creates a board with data
+    $response = $this->actingAs($user)
+        ->post("/api/boards/add", [
+            'name' => 'Test Board',
+            'description' => 'This is a test board.',
+            'capacity' => 4,
+        ]);
 
-            ]);
-})->todo();
+    // We expect a status code 201 (created)
+    $response->assertStatus(201);
+
+    // Explicitly check that the board was created in the database
+    $this->assertDatabaseHas('boards', [
+        'name' => 'Test Board',
+        'description' => 'This is a test board.',
+        'capacity' => 4,
+    ]);
+
+    // get the board in database and return the first result
+    $board = Board::where('name', 'Test Board')->first();
+
+    // Check JSON response content
+    $response->assertJson([
+        'response' => [
+            'status_code' =>201,
+            'status_title' => 'Success',
+            'status_message' => 'Board created successfully.',
+            'board' => $board->withCount('users')->get()->toJson(),
+        ]
+    ]);
+
+    // Check JSON response structure
+    $response->assertJsonStructure([
+        'response' => [
+            'status_code',
+            'status_title',
+            'status_message',
+            'board',
+        ]
+    ]);
+
+    // Count users in the board
+    expect($user->boards)->toHaveCount(1);
+
+    // Explicitly check that the user was attached to the board
+    $this->assertDatabaseHas('board_user', [
+        'board_id' => $board->id,
+        'user_id' => $user->id,
+    ]);
+
+    // Verify that the code was generated and is unique
+    $this->assertNotNull($board->code);
+    $this->assertEquals(10, strlen($board->code));
+});
 
 it('assign roles correctly when board created', function () {
 })->todo();

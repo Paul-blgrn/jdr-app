@@ -16,6 +16,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    // -----------------
+    // PlayerBoard Controller
+    // -----------------
+
     // Display all the user Boards
     Route::get('/boards', [PlayerBoardController::class, 'index']);
 
@@ -28,6 +32,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Leave a Board
     Route::delete('/board/leave/{board}', [PlayerBoardController::class,'destroy']);
 
-    // Delete a board
+    // -----------------
+    // Board Controller
+    // -----------------
+
+    // Add a Board
+    Route::post('/boards/add', [BoardController::class, 'store']);
+
+    // Delete a Board
     Route::delete('/board/delete/{board}', [BoardController::class, 'destroy']);
 });

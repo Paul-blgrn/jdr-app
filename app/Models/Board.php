@@ -9,6 +9,13 @@ class Board extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'description',
+        'capacity',
+        'code',
+    ];
+
     /**
      * The users that belong to the board.
      */
