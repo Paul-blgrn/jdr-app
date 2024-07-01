@@ -425,7 +425,7 @@ it("can leave a board successfully", function () {
 
     // Perform the request to detach the user from the board
     $response = $this->actingAs($userWhoLeave)
-        ->delete("/api/board/leave/{$board->id}")
+        ->delete("/api/board/{$board->id}/leave")
         ->assertStatus(200);
 
     // Check JSON response content
@@ -485,7 +485,7 @@ it('can leave a board successfully if other users remain', function () {
 
     // Simulate the user's attempt to leave the board
     $response = $this->actingAs($userWhoLeave)
-        ->delete('/api/board/leave/' . $board->id)
+        ->delete("/api/board/{$board->id}/leave")
         ->assertStatus(200);
 
     // Check JSON response content
@@ -535,7 +535,7 @@ it('cannot leave a board if it will be empty', function () {
 
     // simulate the user trying to leave the board and failing because it would make it empty
     $response = $this->actingAs($user)
-        ->delete("/api/board/leave/{$board->id}")
+        ->delete("/api/board/{$board->id}/leave")
         ->assertStatus(403);
 
     // Check JSON response content
@@ -577,7 +577,7 @@ it('returns 404 if board that user try to leave does not exist', function () {
 
     // simulate an user trying to leave a non-existent board
     $this->actingAs($user)
-        ->delete("/api/board/leave/{$invalidBoardId}")
+        ->delete("/api/board/{$invalidBoardId}/leave")
         ->assertStatus(404);
 });
 
@@ -594,7 +594,7 @@ it("cannot leave a board if user is not a member", function () {
 
     // simulate an user trying to leave a board which it's not a member
     $response = $this->actingAs($notAMember)
-        ->delete("/api/board/leave/{$board->id}")
+        ->delete("/api/board/{$board->id}/leave")
         ->assertStatus(403);
 
     // Check JSON response content
@@ -632,7 +632,7 @@ it("cannot leave a board if user have role master", function () {
     // simulate an attempt to leave the board while having the role "master"
     // we return a 403 error in this case
     $response = $this->actingAs($userToLeave)
-        ->delete("/api/board/leave/{$board->id}")
+        ->delete("/api/board/{$board->id}/leave")
         ->assertStatus(403);
 
     // Check JSON response content

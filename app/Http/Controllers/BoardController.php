@@ -14,7 +14,7 @@ class BoardController extends Controller
      * Display a listing of the resource.
      */
     public function index() {
-        
+
     }
 
     /**
@@ -101,9 +101,64 @@ class BoardController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified board in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, $id) {
+        // Validate the requested data
+        $rules = [
+            'name' => 'bail|required|string|max:50',
+            'description' => 'bail|required|string|max:255',
+            'capacity' => 'bail|required|integer|min:2',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        // If validation fails, return an error
+        if ($validator->fails()) {
+            return response()->json([
+                'response' => [
+                    'status_title' => 'Validation Error',
+                    'status_message' => $validator->errors()->toArray(),
+                    'status_code' => 422,
+                ]
+            ], 422);
+        }
+
+        $validatedData = $validator->validated();
+
+        // Retreive the board
+        $board = Board::findOrFail($id);
+
+        // Retrieve the authenticated user
+        $user = auth()->user();
+
+        // Retrieve the user from the board and check role
+        $foundUser = $board->users()->where('user_id', $user->id)->first();
+        if ($foundUser->pivot->role !== 'master') {
+            return response()->json([
+                'response' => [
+                    'status_title' => 'No permission',
+                    'status_message' => 'Player cannot update the board.',
+                    'status_code' => 403,
+                ]
+            ], 403);
+        }
+
+        // Update the board with validated data
+        $board->update($validatedData);
+
+        // Return a JSON response with the updated board details
+        return response()->json([
+            'response' => [
+                'status_title' => 'Success',
+                'status_message' => 'Board updated successfully.',
+                'status_code' => 200,
+            ]
+        ], 200);
 
     }
 

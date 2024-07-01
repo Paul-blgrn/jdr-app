@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/boards/join', [PlayerBoardController::class, 'store']);
 
     // Leave a Board
-    Route::delete('/board/leave/{board}', [PlayerBoardController::class,'destroy']);
+    Route::delete('/board/{board}/leave', [PlayerBoardController::class,'destroy']);
 
     // -----------------
     // Board Controller
@@ -39,6 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Add a Board
     Route::post('/boards/add', [BoardController::class, 'store']);
 
+    // Update a Board
+    Route::put('/board/{board}/update', [BoardController::class, 'update']);
+
     // Delete a Board
-    Route::delete('/board/delete/{board}', [BoardController::class, 'destroy']);
+    Route::delete('/board/{board}/delete', [BoardController::class, 'destroy']);
 });
