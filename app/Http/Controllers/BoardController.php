@@ -32,7 +32,7 @@ class BoardController extends Controller
     public function store(Request $request) {
         // Validate the requested data
         $rules = [
-            'name' => 'bail|required|string|unique:boards,name|max:50',
+            'name' => 'bail|required|string|unique:boards,name|min:10|max:50',
             'description' => 'bail|required|string|min:20|max:255',
             'capacity' => 'bail|required|integer|min:2|max:20',
         ];

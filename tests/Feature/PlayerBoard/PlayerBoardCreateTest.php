@@ -12,7 +12,7 @@ use function Pest\Laravel\withoutExceptionHandling;
 //   POSITIVE TEST (CAN)
 // ------------------------
 
-it("can join a board with right code", function () {
+it('can join a board with right code', function () {
     // Create one User with role master
     $master = User::factory()->create();
     // Create one User with role player
@@ -120,75 +120,7 @@ it('cannot join boards with wrong or empty invite code', function (string $code)
 
 })->with(["12345", "bonjour", ""]);
 
-it("cannot join a full board", function () {
-    // Create 1 user (master)
-    $user = User::factory()->create();
-    // Create 3 users (players)
-    $users = User::factory(3)->create();
-    // Create another user (the one who will try to join the full board)
-    $userToJoin = User::factory()->create();
-
-    // Create a Board with capacity for 4 users
-    $board = Board::factory()->create([
-        'name' => 'table pleine',
-        'description' => 'la table est pleine et doit exclure toute personne qui essaye de la rejoindre',
-        'code' => 'fulltable',
-        'capacity' => 4,
-    ]);
-
-    // Attach users to the Board with their roles
-    $board->users()->attach($user, ['role'=> 'master']);
-    $board->users()->attach($users, ['role'=> 'player']);
-
-    // Simulate the user's attempt to join the board
-    $response = $this->actingAs($userToJoin)
-        ->post("/api/boards/join",
-            [
-                "code" => $board->code,
-            ])
-        ->assertStatus(403);
-
-    // Refresh the board model
-    $board->refresh();
-
-    // Check that the response is in JSON and contains the expected data
-    $response->assertJson([
-        'response' => [
-            'status_title' => 'No permission',
-            'status_message' => 'User cannot join à full board.',
-            'status_code' => 403,
-        ]
-    ]);
-
-    // Check JSON response structure
-    $response->assertJsonStructure([
-        'response' => [
-            'status_title',
-            'status_message',
-            'status_code',
-        ]
-    ]);
-
-    // Check the number of users on the board has not changed
-    expect($board->users)->toHaveCount(4);
-
-    // Check that the user who tried to join is not in the pivot table
-    $this->assertDatabaseMissing('board_user', [
-        'board_id' => $board->id,
-        'user_id' => $userToJoin->id,
-    ]);
-
-    // Check user roles on the board
-    $board->users()->each(function (User $users) {
-        $role = $users->pivot->role;
-        if ($users->id == 1) {
-            expect($role)->toBe('master');
-        } else {
-            expect($role)->toBe('player');
-        }
-    });
-});
-it("cannot join a full board", function () {
+it('cannot join a full board', function () {
     // Create 1 user (master)
     $user = User::factory()->create();
     // Create 3 users (players)

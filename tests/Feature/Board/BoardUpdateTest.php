@@ -121,6 +121,11 @@ it('cannot update a board with invalid data', function () {
 });
 
 it('cannot update a board with too short name', function () {
+    $user = User::factory()->create();
+
+})->todo();
+
+it('cannot update a board with duplicated name', function () {
 
 })->todo();
 

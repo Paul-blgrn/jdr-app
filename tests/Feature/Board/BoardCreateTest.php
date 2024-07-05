@@ -176,6 +176,44 @@ it('cannot create a board without name', function() {
     ]);
 });
 
+it('cannot create a board with too short name', function () {
+    // Create one User
+    $user = User::factory()->create();
+
+    // Simulate the user trying to create a board with a short description
+    $response = $this->actingAs($user)
+        ->post('/api/boards/add',[
+            'name' => 'Short',
+            'description' => 'This is a test board with short name.',
+            'capacity' => 4,
+        ]);
+
+    // We expect a status code 422 (validation error)
+    $response->assertStatus(422);
+
+    // Check JSON response content
+    $response->assertJson([
+        'response' => [
+            'status_title' => 'Validation Error',
+            'status_message' => [
+                'name' => [
+                    'The name field must be at least 10 characters.'
+                ]
+            ],
+            'status_code' => 422,
+        ]
+    ]);
+
+     // Check JSON response structure
+     $response->assertJsonStructure([
+        'response' => [
+            'status_title',
+            'status_message',
+            'status_code',
+        ]
+    ]);
+});
+
 it('cannot create board with duplicated or invalid name', function (string $name) {
     // Create a User
     $user = User::factory()->create();
@@ -262,19 +300,15 @@ it('cannot create a board with too short description', function () {
     // We expect a status code 422 (validation error)
     $response->assertStatus(422);
 
-    // Create a request instance to simulate the validation
-    $request = Request::create('/api/boards/add', 'POST', ['description'  => 'Short']);
-
-    // Create a validator instance to validate the request
-    $validator = Validator::make($request->all(), [
-        'description' => 'bail|required|string|min:20|max:255',
-    ]);
-
     // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'Validation Error',
-            'status_message' => $validator->errors()->toArray(),
+            'status_message' => [
+                'description' => [
+                    'The description field must be at least 20 characters.'
+                ]
+            ],
             'status_code' => 422,
         ]
     ]);
@@ -308,6 +342,19 @@ it('cannot create a board with capacity less than 2', function () {
     $response->assertStatus(422);
 
     // Check JSON response content
+    $response->assertJson([
+        'response' => [
+            'status_title' => 'Validation Error',
+            'status_message' => [
+                'capacity' => [
+                    'The capacity field must be at least 2.'
+                ]
+            ],
+            'status_code' => 422,
+        ]
+    ]);
+
+    // Check JSON response content
     $response->assertJsonStructure([
         'response' => [
             'status_title',
@@ -332,19 +379,15 @@ it('cannot create a board with too high capacity', function() {
     // We expect a status code 422 (validation error)
     $response->assertStatus(422);
 
-    // Create a request instance to simulate the validation
-    $request = Request::create('/api/boards/add', 'POST', ['capacity'  => 100]);
-
-    // Create a validator instance to validate the request
-    $validator = Validator::make($request->all(), [
-        'capacity' => 'bail|required|integer|min:2|max:20',
-    ]);
-
     // Check JSON response content
     $response->assertJson([
         'response' => [
             'status_title' => 'Validation Error',
-            'status_message' => $validator->errors()->toArray(),
+            'status_message' => [
+                'capacity' => [
+                    'The capacity field must not be greater than 20.'
+                ]
+            ],
             'status_code' => 422,
         ]
     ]);
