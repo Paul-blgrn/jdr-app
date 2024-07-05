@@ -32,9 +32,9 @@ class BoardController extends Controller
     public function store(Request $request) {
         // Validate the requested data
         $rules = [
-            'name' => 'bail|required|string|max:50',
-            'description' => 'bail|required|string|max:255',
-            'capacity' => 'bail|required|integer|min:2',
+            'name' => 'bail|required|string|unique:boards,name|max:50',
+            'description' => 'bail|required|string|min:20|max:255',
+            'capacity' => 'bail|required|integer|min:2|max:20',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -110,7 +110,7 @@ class BoardController extends Controller
     public function update(Request $request, $id) {
         // Validate the requested data
         $rules = [
-            'name' => 'bail|required|string|max:50',
+            'name' => 'bail|required|string|unique:boards,name|max:50',
             'description' => 'bail|required|string|max:255',
             'capacity' => 'bail|required|integer|min:2',
         ];
