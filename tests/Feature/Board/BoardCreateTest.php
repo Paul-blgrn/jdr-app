@@ -2,11 +2,10 @@
 
 use App\Models\Board;
 use App\Models\User;
-
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+use function Pest\Laravel\actingAs;
 use function Pest\Laravel\withoutExceptionHandling;
 
 // ------------------------
@@ -73,16 +72,53 @@ it('can create a board', function () {
 });
 
 
-test('board code is unique', function () {
-    // Create one User
+it('generates unique board codes', function () {
+    // Create a user
     $user = User::factory()->create();
 
-    // Create multiple Boards
-    $board1 = Board::factory()->create(['code' => Str::random(10)]);
-    $board2 = Board::factory()->create(['code' => Str::random(10)]);
+    // Create the first and second Board and extract the code
+    $boardResponse = $this->actingAs($user)
+    ->post('/api/boards/add', [
+        'name' => 'Board number One',
+        'description' => 'Description for board one',
+        'capacity' => 4,
+    ])->assertStatus(201);
 
-    // Check that the codes are unique
-    $this->assertNotEquals($board1->code, $board2->code);
+    $boardResponse = $this->actingAs($user)
+    ->post('/api/boards/add', [
+        'name' => 'Board number Two',
+        'description' => 'Description for board two',
+        'capacity' => 6,
+    ])->assertStatus(201);
+
+    // Retrieving boards from the response
+    $boardContent = $boardResponse->getContent();
+    $boardData = json_decode($boardContent, true);
+    $boardFinalData = json_decode($boardData['response']['board'], true);
+
+    // Extract codes from tables
+    $board1Code = $boardFinalData[0]['code'];
+    $board2Code = $boardFinalData[1]['code'];
+
+    // Ensure codes are present and unique
+    $this->assertIsString($board1Code);
+    $this->assertIsString($board2Code);
+    $this->assertNotEmpty($board1Code);
+    $this->assertNotEmpty($board2Code);
+    $this->assertNotEquals($board1Code, $board2Code);
+});
+
+test('board code format and length', function () {
+    // Create one User
+    $user = User::factory()->create();
+    // Create a board
+    $board = Board::factory()->create(['code' => $code = Str::random(10)]);
+    // Attach user to the board with role "master"
+    $board->users()->attach($user->id, ['role' => 'master']);
+
+    // Check that the code is a string and has the correct length
+    $this->assertIsString($board->code);
+    $this->assertEquals(10, strlen($board->code));
 });
 
 test('the creator of board have role master and other have role player', function () {
@@ -214,7 +250,7 @@ it('cannot create a board with too short name', function () {
     ]);
 });
 
-it('cannot create board with duplicated or invalid name', function (string $name) {
+it('cannot create board with duplicated or empty name', function (string $name) {
     // Create a User
     $user = User::factory()->create();
 
@@ -232,22 +268,32 @@ it('cannot create board with duplicated or invalid name', function (string $name
     // We expect a status code 422 (Validation Error)
     $response->assertStatus(422);
 
-    // Create a request instance to simulate the validation
-    $request = Request::create('/api/boards/add', 'POST', ['name'  => $name]);
-
-    // Create a validator instance to validate the request
-    $validator = Validator::make($request->all(), [
-        'name' => 'bail|required|string|unique:boards,name|max:50',
-    ]);
-
     // Check JSON response content
-    $response->assertJson([
-        'response' => [
-            'status_title' => 'Validation Error',
-            'status_message' => $validator->errors()->toArray(),
-            'status_code' => 422,
-        ]
-    ]);
+    if (empty($name)) {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'name' => [
+                        'The name field is required.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
+        ]);
+    } else {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'name' => [
+                        'The name has already been taken.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
+        ]);
+    }
 
     // Check JSON response structure
     $response->assertJsonStructure([

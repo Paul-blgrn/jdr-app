@@ -20,7 +20,29 @@ class BoardFactory extends Factory
             'name' => $this->faker->words(3, true),
             'description' => $this->faker->sentence(),
             'capacity' => $this->faker->numberBetween(2,10),
-            'code' => $this->faker->words(10, true),
+            'code' => $this->generateUniqueCode(),
         ];
+    }
+
+    /**
+     * Generate a unique random code.
+     *
+     * @return string
+     */
+    private function generateUniqueCode(): string
+    {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        $codeLength = 10;
+        $code = '';
+
+        // Generate a random unique code
+        do {
+            $code = '';
+            for ($i = 0; $i < $codeLength; $i++) {
+                $code .= $characters[rand(0, strlen($characters) - 1)];
+            }
+        } while (\App\Models\Board::where('code', $code)->exists()); // Ensure code is unique
+
+        return $code;
     }
 }

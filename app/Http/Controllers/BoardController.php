@@ -25,6 +25,27 @@ class BoardController extends Controller
     }
 
     /**
+     * Generate a unique random code.
+     *
+     * @return string
+     */
+    private function generateUniqueCode(): string
+    {
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        $codeLength = 10;
+        $code = '';
+
+        do {
+            $code = '';
+            for ($i = 0; $i < $codeLength; $i++) {
+                $code .= $characters[rand(0, strlen($characters) - 1)];
+            }
+        } while (Board::where('code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
      * Store a newly created board in storage.
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
@@ -51,7 +72,9 @@ class BoardController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $validatedData['code'] = $this->generateRandomCode(10);
+        $validatedData['code'] = $this->generateUniqueCode();
+
+        // dd('code 1: '. $this->generateUniqueCode() . ' code 2: ' . $this->generateUniqueCode());
 
         // Retrieve the authenticated user
         $user = auth()->user();
@@ -68,22 +91,9 @@ class BoardController extends Controller
                 'status_code' => 201,
                 'status_title' => 'Success',
                 'status_message' => 'Board created successfully.',
-                'board' => $board->withCount('users')->get()->toJson()
+                'board' => $board->withCount('users')->get()->toJson(),
             ]
         ], 201);
-    }
-
-    /**
-     * Generate random code
-     */
-    protected function generateRandomCode($length = 10) {
-        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
     }
 
     /**
@@ -110,9 +120,9 @@ class BoardController extends Controller
     public function update(Request $request, $id) {
         // Validate the requested data
         $rules = [
-            'name' => 'bail|required|string|unique:boards,name|max:50',
-            'description' => 'bail|required|string|max:255',
-            'capacity' => 'bail|required|integer|min:2',
+            'name' => 'bail|required|string|unique:boards,name|min:10|max:50',
+            'description' => 'bail|required|string|min:20|max:255',
+            'capacity' => 'bail|required|integer|min:2|max:20',
         ];
 
         $validator = Validator::make($request->all(), $rules);
