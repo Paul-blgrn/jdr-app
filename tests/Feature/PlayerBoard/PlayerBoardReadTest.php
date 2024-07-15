@@ -29,7 +29,40 @@ it("sent a 404 error when accessing a board that do not exist", function () {
     ->assertStatus(404);
 });
 
-it("displays all the user boards and does not send back other players boards", function () {
+it('paginate boards', function () {
+    // Create one User
+    $user = User::factory()->create();
+    $boards = Board::factory(15)->create();
+
+    $boards->each(function($board) use ($user) {
+        $board->users()->attach($user->id, ['role' => 'master']);
+    });
+
+    // Simulate the user fetching the boards with pagination
+    $response = $this->actingAs($user)
+        ->get('/api/boards?page=2');
+
+    // We expect a status code 200 (OK)
+    $response->assertStatus(200);
+
+    $responseData = $response->json();
+
+    // Assert that there are boards in the current page
+    $this->assertNotEmpty($responseData['data']);
+
+    // Assert that total items is 15
+    $this->assertEquals($responseData['meta']['total'], 15);
+
+    // Assert that item per page is 5
+    $this->assertEquals($responseData['meta']['per_page'], 5);
+
+    // Assert that the first page contains 5 items
+    $this->assertCount(5, $responseData['data']);
+
+});
+
+
+it('displays all the user boards and does not send back other players boards', function () {
     // Create one user and associate 3 Boards with him
     $user = User::factory()->hasAttached(Board::factory(3))->create();
 
@@ -41,41 +74,49 @@ it("displays all the user boards and does not send back other players boards", f
 
     // Check JSON response structure
     $response->assertJsonStructure([
-        '*' => [
-            'id',
-            'name',
-            'description',
-            'capacity',
-            'code',
-            'created_at',
-            'updated_at',
-            'users_count',
-            'pivot' => [
-                'user_id',
-                'board_id',
-                'role',
+        'meta' => [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+        ],
+        'data' => [
+            '*' => [
+                'id',
+                'name',
+                'description',
+                'capacity',
+                'code',
+                'created_at',
+                'updated_at',
+                'users_count',
+                'pivot' => [
+                    'user_id',
+                    'board_id',
+                    'role',
+                ],
             ],
         ],
     ]);
 
     // Get response content in JSON
-    $data = $response->json();
+    $finalData = $response->json();
 
     // Check that the response is not empty
-    expect($data)->not->toBeEmpty();
+    expect($finalData)->not->toBeEmpty();
 
     // Check that $data contains the right number of boards
-    expect($data)->toHaveCount($user->boards->count());
+    expect($finalData['data'])->toHaveCount($user->boards->count());
 
-    $pluckedData = collect($data)->pluck('id')->toArray();
+    $pluckedData = collect($finalData['data'])->pluck('id')->toArray();
     $pluckedUser = $user->boards->pluck('id')->toArray();
     // Check IDS
     expect($pluckedData)->toEqual($pluckedUser);
 
     // Verify that the response contains the correct information
-    $user->boards->each(function (Board $board) use ($data) {
+    $user->boards->each(function (Board $board) use ($finalData) {
         // Get the first element of $data
-        $boardData = collect($data)->firstWhere('id', $board->id);
+        $boardData = collect($finalData['data'])->firstWhere('id', $board->id);
 
         // Check that the board details are correct
         expect($boardData['name'])->toBe($board->name);

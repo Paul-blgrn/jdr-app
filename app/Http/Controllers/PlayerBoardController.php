@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,8 +17,41 @@ class PlayerBoardController extends Controller
         // Retreive authenticated user
         $user = auth()->user();
 
-        $boards = $user->boards()->withCount('users')->get();
-        return $boards->toJson();
+        // Check if user is authenticated
+        if (!$user) {
+            return response()->json([
+                'response' => [
+                    'status_title' => 'Unauthenticated',
+                    'status_message' => 'You are not authenticated !',
+                    'status_code' => 401,
+                ]
+            ], 401);
+        }
+
+        $perPage = 5;
+        try {
+            // Fetch user's boards with pagination
+            $boards = $user->boards()->withCount('users')->paginate($perPage);
+
+            return response()->json([
+                'meta' => [
+                    'total' => $boards->total(),
+                    'per_page' => $boards->perPage(),
+                    'current_page' => $boards->currentPage(),
+                    'last_page' => $boards->lastPage(),
+                ],
+                'data' => $boards->items(),
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'response' => [
+                    'status_title' => 'Error',
+                    'status_message' => 'An error occurred while fetching boards',
+                    'status_code' => 500,
+                ]
+            ], 500);
+        }
     }
 
     /**
