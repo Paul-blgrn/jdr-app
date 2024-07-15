@@ -23,12 +23,12 @@ class Board extends Model
         return $this->belongsToMany(User::class)->withPivot('role');
     }
 
-    public function chats() {
-        return $this->belongsToMany(Chat::class);
-    }
-
     public function templates() {
         return $this->belongsToMany(Template::class);
+    }
+
+    public function chats() {
+        return $this->belongsToMany(Chat::class);
     }
 
     public function logs() {

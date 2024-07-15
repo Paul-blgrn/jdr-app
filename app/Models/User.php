@@ -59,4 +59,8 @@ class User extends Authenticatable
     public function boards() {
         return $this->belongsToMany(Board::class)->withPivot('role');
     }
+
+    public function templates() {
+        return $this->belongsToMany(Template::class);
+    }
 }

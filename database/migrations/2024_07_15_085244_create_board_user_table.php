@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('templates', function (Blueprint $table) {
+        Schema::create('board_user', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable(false);
-            $table->json('content')->nullable(false);
-            $table->tinyInteger('default')->default(0);
-            $table->enum('type', ['personnage', 'inventaire', 'competences', 'note', 'autres'])->default('autres');
+            $table->foreignId('board_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('role', ['master','player'])->default('player');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('templates');
+        Schema::dropIfExists('board_user');
     }
 };
