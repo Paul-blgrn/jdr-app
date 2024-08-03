@@ -7,7 +7,8 @@
 - ![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
 
 # Entity Relation Diagramm (ERD)
-![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/9b68d15d-c192-4159-805c-30d5d78ebe20)
+![bdd_schema2](https://github.com/user-attachments/assets/03d4751f-e303-42cc-a28b-6ff6340557fc)
+
 
 <hr />
 
