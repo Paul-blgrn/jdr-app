@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Board;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 
 use Illuminate\Support\Facades\Request;
@@ -12,18 +14,25 @@ use function Pest\Laravel\withoutExceptionHandling;
 //   POSITIVE TEST (CAN)
 // ------------------------
 
-it("can leave a board successfully", function () {
+it('can leave a board successfully', function () {
     // Create four Users
     $users = User::factory(4)->create();
     // Create one Board
     $board = Board::factory()->create();
 
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    $permissionLeave = Permission::factory()->create(['name' => 'leave-board']);
+
+    $rolePlayer->permissions()->attach($permissionLeave->id);
+
     // Attach the first user with role "master"
-    $board->users()->attach($users->first()->id, ['role' => 'master']);
+    $board->users()->attach($users->first()->id, ['role_id' => $roleMaster->id]);
 
     // Attach the remaining users with role "player"
-    $users->skip(1)->each(function ($user) use ($board) {
-        $board->users()->attach($user->id, ['role' => 'player']);
+    $users->skip(1)->each(function ($user) use ($board, $rolePlayer) {
+        $board->users()->attach($user->id, ['role_id' => $rolePlayer->id]);
     });
 
     // User who will leave the board
@@ -56,16 +65,21 @@ it("can leave a board successfully", function () {
     $this->assertDatabaseMissing('board_user', [
         'board_id' => $board->id,
         'user_id' => $userWhoLeave->id,
+        'role_id' => $rolePlayer->id,
     ]);
 
     // Filter users to exclude the one who left and
     // check explicitly in database that others users are still attached to the board
     $users->filter(function (User $user) use ($userWhoLeave) {
         return $user->id !== $userWhoLeave->id;
-    })->each(function (User $user) use ($board) {
+    })->each(function (User $user) use ($board, $roleMaster, $rolePlayer) {
+        // Check the role_id based on the role assigned
+        $expectedRoleId = $user->id === $board->users->first()->id ? $roleMaster->id : $rolePlayer->id;
+
         $this->assertDatabaseHas('board_user', [
             'board_id'=> $board->id,
             'user_id'=> $user->id,
+            'role_id' => $expectedRoleId,
         ]);
     });
 
@@ -84,10 +98,17 @@ it('can leave a board successfully if other users remain', function () {
     // Create one board
     $board = Board::factory()->create();
 
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    $permissionLeave = Permission::factory()->create(['name' => 'leave-board']);
+
+    $rolePlayer->permissions()->attach($permissionLeave->id);
+
     // Attach the first user with role "master"
-    $board->users()->attach($master->id, ['role' => 'master']);
+    $board->users()->attach($master->id, ['role_id' => $roleMaster->id]);
     // Attach the second user with role "player"
-    $board->users()->attach($userWhoLeave->id, ['role' => 'player']);
+    $board->users()->attach($userWhoLeave->id, ['role_id' => $rolePlayer->id]);
 
     // Simulate the user's attempt to leave the board
     $response = $this->actingAs($userWhoLeave)
@@ -122,6 +143,7 @@ it('can leave a board successfully if other users remain', function () {
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $master->id,
+        'role_id' => $roleMaster->id,
     ]);
 
     // Count the number of users on the board
@@ -149,9 +171,15 @@ it('cannot leave a board if it will be empty', function () {
     // Create one Board
     $board = Board::factory()->create();
 
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    $permissionLeave = Permission::factory()->create(['name' => 'leave-board']);
+
+    $rolePlayer->permissions()->attach($permissionLeave->id);
+
     // Attach user to the board with role "player" in this case
     // because an user with the role "master"  will not be able to leave the board in any case
-    $board->users()->attach($user->id, ['role' => 'player']);
+    $board->users()->attach($user->id, ['role_id' => $rolePlayer->id]);
 
     // simulate the user trying to leave the board and failing because it would make it empty
     $response = $this->actingAs($user)
@@ -188,10 +216,11 @@ it('cannot leave a board if it will be empty', function () {
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $user->id,
+        'role_id' => $rolePlayer->id,
     ]);
 });
 
-it("cannot leave a board if user is not a member", function () {
+it('cannot leave a board if user is not a member', function () {
     // Create one User (which is a member of the board)
     $user = User::factory()->create();
     // Create another User (which is not a member of the board)
@@ -199,8 +228,14 @@ it("cannot leave a board if user is not a member", function () {
     // Create one Board
     $board = Board::factory()->create();
 
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    $permissionLeave = Permission::factory()->create(['name' => 'leave-board']);
+
+    $rolePlayer->permissions()->attach($permissionLeave->id);
+
     // Attach $user to the board with role "master"
-    $board->users()->attach($user->id, ['role' => 'master']);
+    $board->users()->attach($user->id, ['role_id' => $rolePlayer->id]);
 
     // simulate an user trying to leave a board which it's not a member
     $response = $this->actingAs($notAMember)
@@ -226,7 +261,7 @@ it("cannot leave a board if user is not a member", function () {
     ]);
 });
 
-it("cannot leave a board if user have role master", function () {
+it('cannot leave a board if user have role master', function () {
     // Create one User (who will try to leave the board)
     $userToLeave = User::factory()->create();
     // Create one User (who will stay in the board)
@@ -234,10 +269,17 @@ it("cannot leave a board if user have role master", function () {
     // Create one Board
     $board = Board::factory()->create();
 
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    $permissionLeave = Permission::factory()->create(['name' => 'leave-board']);
+
+    $rolePlayer->permissions()->attach($permissionLeave->id);
+
     // Attach $userToLeave to the board with role "master"
-    $board->users()->attach($userToLeave->id, ["role" => "master"]);
+    $board->users()->attach($userToLeave->id, ['role_id' => $roleMaster->id]);
     // Attach $user to the board with role "player"
-    $board->users()->attach($user->id, ["role" => "player"]);
+    $board->users()->attach($user->id, ['role_id' => $rolePlayer->id]);
 
     // simulate an attempt to leave the board while having the role "master"
     // we return a 403 error in this case
@@ -267,6 +309,7 @@ it("cannot leave a board if user have role master", function () {
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $userToLeave->id,
+        'role_id' => $roleMaster->id,
     ]);
 
     // We expect 2 user on the board because the master of the board can't leave it

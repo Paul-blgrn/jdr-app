@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Board;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 
 use Illuminate\Support\Facades\Request;
@@ -34,8 +36,21 @@ it('paginate boards', function () {
     $user = User::factory()->create();
     $boards = Board::factory(15)->create();
 
-    $boards->each(function($board) use ($user) {
-        $board->users()->attach($user->id, ['role' => 'master']);
+    // Create roles
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+
+    // Create permission
+    $permissionView = Permission::factory()->create(['name' => 'view-board']);
+
+    // Attach permissions to roles
+    $roleMaster->permissions()->attach($permissionView->id);
+
+    // Attach global roles to users
+    $user->roles()->attach($roleUser->id);
+
+    $boards->each(function($board) use ($user, $roleMaster) {
+        $board->users()->attach($user->id, ['role_id' => $roleMaster->id]);
     });
 
     // Simulate the user fetching the boards with pagination
@@ -64,7 +79,25 @@ it('paginate boards', function () {
 
 it('displays all the user boards and does not send back other players boards', function () {
     // Create one user and associate 3 Boards with him
-    $user = User::factory()->hasAttached(Board::factory(3))->create();
+    $user = User::factory()->create();
+    $boards = Board::factory(3)->create();
+
+    // Create roles
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+
+    // Create permission
+    $permissionView = Permission::factory()->create(['name' => 'view-board']);
+
+    // Attach permissions to roles
+    $roleMaster->permissions()->attach($permissionView->id);
+
+    // Attach global roles to users
+    $user->roles()->attach($roleUser->id);
+
+    $boards->each(function($board) use ($user, $roleMaster) {
+        $board->users()->attach($user->id, ['role_id' => $roleMaster->id]);
+    });
 
     // Simulate the connection of $user and ensure the response 200 on "/api/boards"
     $response = $this
@@ -93,7 +126,7 @@ it('displays all the user boards and does not send back other players boards', f
                 'pivot' => [
                     'user_id',
                     'board_id',
-                    'role',
+                    'role_id',
                 ],
             ],
         ],
@@ -134,11 +167,28 @@ it('displays all users associated with a board', function () {
     // Create one Board
     $board = Board::factory()->create();
 
+    // Create roles
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    // Create permission
+    $permissionView = Permission::factory()->create(['name' => 'view-board']);
+
+    // Attach permissions to roles
+    $roleMaster->permissions()->attach($permissionView->id);
+    $rolePlayer->permissions()->attach($permissionView->id);
+
+    // Attach global roles to all users
+    $users->each(function ($user) use ($roleUser){
+        $user->roles()->attach($roleUser->id);
+    });
+
     // Attach the first user to the board and assign him the role "master"
-    $board->users()->attach($users->first()->id, ['role' => 'master']);
+    $board->users()->attach($users->first()->id, ['role_id' => $roleMaster->id]);
     // Attach the remaining users with role "player"
-    $users->skip(1)->each(function ($user) use ($board) {
-        $board->users()->attach($user->id, ['role' => 'player']);
+    $users->skip(1)->each(function ($user) use ($board, $rolePlayer) {
+        $board->users()->attach($user->id, ['role_id' => $rolePlayer->id]);
     });
 
     // Select one user
@@ -162,7 +212,7 @@ it('displays all users associated with a board', function () {
                 'pivot' => [
                     'board_id',
                     'user_id',
-                    'role',
+                    'role_id',
                 ],
             ],
         ],
@@ -186,16 +236,22 @@ it('displays all users associated with a board', function () {
 
     // Create a collection of user roles mapped by user IDs from the JSON response data
     $userRoles = collect($data['users'])->mapWithKeys(function ($user) {
-        return [$user['id'] => $user['pivot']['role']];
+        return [$user['id'] => $user['pivot']['role_id']];
     });
 
-    // test users roles
-    expect($userRoles[$users->first()->id])->toBe('master');
+    // Get role_id for the first user (the master)
+    $masterRoleId = $userRoles[$users->first()->id];
+    // get role in database where id = masterRoleId
+    $role = Role::where('id', $masterRoleId)->first();
+    // We expect that the name of the role is "master"
+    expect($role->name)->toBe('master');
 
     // Skip the first element in the collection $userRoles and iterate over the remaining elements.
-    $userRoles->skip(1)->each(function ($role) {
+    $userRoles->skip(1)->each(function ($roleID) {
+        // get role from database where id = roleID
+        $role = Role::where('id', $roleID)->first();
         // Assert that each $role is equal to 'player'.
-        expect($role)->toBe('player');
+        expect($role->name)->toBe('player');
     });
 
     foreach ($data['users'] as $userData) {
@@ -210,10 +266,26 @@ it('displays a board with details', function () {
     // Create one Board
     $board = Board::factory()->create();
 
+    // Create roles
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    // Create permission
+    $permissionView = Permission::factory()->create(['name' => 'view-board']);
+
+    // Attach permissions to roles
+    $roleMaster->permissions()->attach($permissionView->id);
+    $rolePlayer->permissions()->attach($permissionView->id);
+
+    $users->each(function ($user) use ($roleUser){
+        $user->roles()->attach($user->id, ['role_id' => $roleUser->id]);
+    });
+
     // Attach first user with role "master"
-    $board->users()->attach($users->first()->id, ["role"=> "master"]);
+    $board->users()->attach($users->first()->id, ['role_id' => $roleMaster->id]);
     // Attach last user with role "player"
-    $board->users()->attach($users->last()->id, ["role"=> "player"]);
+    $board->users()->attach($users->last()->id, ['role_id' => $rolePlayer->id]);
 
 
     $response = $this->actingAs($users->first())
@@ -239,7 +311,7 @@ it('displays a board with details', function () {
                 'pivot' => [
                     'board_id',
                     'user_id',
-                    'role',
+                    'role_id',
                 ],
             ],
         ],
@@ -274,9 +346,9 @@ it('displays a board with details', function () {
         expect($userData['name'])->toBe($originalUsers->name);
 
         // Retrieve the expected role of the user in the board from the database using the pivot table relationship
-        $expectedRole = $board->users()->where('user_id', $userData['id'])->first()->pivot->role;
+        $expectedRole = $board->users()->where('user_id', $userData['id'])->first()->pivot->role_id;
         // Assert that the role of the user in the API response matches the expected role from the database
-        expect($userData['pivot']['role'])->toBe($expectedRole);
+        expect($userData['pivot']['role_id'])->toBe($expectedRole);
     }
 });
 

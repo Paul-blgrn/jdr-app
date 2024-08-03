@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Board;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 
 use function Pest\Laravel\withoutExceptionHandling;
@@ -13,8 +15,22 @@ test('master can update a board', function () {
     // Create one master and one board
     $master = User::factory()->create();
     $board = Board::factory()->create();
+
+    // Create roles Master
+    $roleUser = Role::factory()->create(['name' => 'user',]);
+    $roleMaster = Role::factory()->create(['name' => 'master',]);
+
+    // Create permission
+    $permission = Permission::factory()->create(['name' => 'update-board']);
+
+    // Attach permission to the role
+    $roleMaster->permissions()->attach($permission->id);
+
+    // Attach to the $master
+    $master->roles()->attach($roleUser);
+
     // Attach master to the board with role "master
-    $board->users()->attach($master->id, ["role" => "master"]);
+    $board->users()->attach($master->id, ['role_id' => $roleMaster->id]);
 
     // Simulate the master updating the board
     $response = $this->actingAs($master)
@@ -58,9 +74,25 @@ test('user cannot update a board', function () {
         'capacity' => 4,
     ]);
 
+    // Create roles Master
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    // Create permission
+    $updatePermission = Permission::factory()->create(['name' => 'update-board']);
+
+    // Attach permission to the role
+    $roleMaster->permissions()->attach($updatePermission->id);
+
+    // attacher un role global à l'utilisateur
+    $users->first()->roles()->attach($roleUser);
+    $users->last()->roles()->attach($roleUser);
+
+
     // Attach users to the board with their roles
-    $board->users()->attach($users->first()->id, ['role' => 'master']);
-    $board->users()->attach($users->last()->id, ['role' => 'player']);
+    $board->users()->attach($users->first()->id, ['role_id' => $roleMaster->id]);
+    $board->users()->attach($users->last()->id, ['role_id' => $rolePlayer->id]);
 
     $response = $this->actingAs($users->last())
         ->put("/api/board/{$board->id}/update", [
@@ -75,8 +107,8 @@ test('user cannot update a board', function () {
     // Check JSON response content
     $response->assertJson([
         'response' => [
-            'status_title' => 'No permission',
-            'status_message' => 'Player cannot update the board.',
+            'status_title' => 'Forbidden',
+            'status_message' => 'You do not have the required board role.',
             'status_code' => 403,
         ]
     ]);
@@ -90,23 +122,37 @@ test('user cannot update a board', function () {
     ]);
 });
 
-it('cannot update a board with invalid data', function () {
-    // Create two Users ans one Board
-    $users = User::factory(2)->create();
+test('the master cannot update a board with invalid data', function () {
+    // Create one Master and one Board
+    $master = User::factory()->create();
     $board = Board::factory()->create();
 
-    // Attach users to the board with their roles
-    $board->users()->attach($users->first()->id, ['role' => 'master']);
-    $board->users()->attach($users->last()->id, ['role' => 'player']);
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $permission = Permission::factory()->create(['name' => 'update-board']);
 
-    // Attempt to update the board with invalid data
-    $response = $this->actingAs($users->first())
+    // Attach permission to the role
+    $roleMaster->permissions()->attach($permission->id);
+
+    // Attach to the $master
+    $master->roles()->attach($roleUser);
+
+    // Attach master to the board with role "master
+    $board->users()->attach($master->id, ['role_id' => $roleMaster->id]);
+
+    // Vérifiez que l'utilisateur a le bon rôle dans la table pivot
+    $this->assertDatabaseHas('board_user', [
+        'board_id' => $board->id,
+        'user_id' => $master->id,
+        'role_id' => $roleMaster->id,
+    ]);
+
+    $response = $this->actingAs($master)
         ->put("/api/board/{$board->id}/update", [
-            'name' => '',
-            'description' => '',
-            'capacity' => 1,
+            'name'=> 'az',
+            'description'=> 'er',
+            'capacity'=> 1,
         ]);
-
 
     // We expect a status code 422 (Validation Error)
     $response->assertStatus(422);

@@ -20,11 +20,15 @@ class Board extends Model
      * The users that belong to the board.
      */
     public function users() {
-        return $this->belongsToMany(User::class)->withPivot('role');
+        return $this->belongsToMany(User::class)->withPivot('role_id');
     }
 
     public function templates() {
         return $this->belongsToMany(Template::class);
+    }
+
+    public function roles() {
+        return $this->belongsToMany(Role::class);
     }
 
     public function chats() {

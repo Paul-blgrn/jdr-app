@@ -57,10 +57,26 @@ class User extends Authenticatable
      * The boards that belong to the user.
      */
     public function boards() {
-        return $this->belongsToMany(Board::class)->withPivot('role');
+        return $this->belongsToMany(Board::class)->withPivot('role_id');
     }
 
     public function templates() {
         return $this->belongsToMany(Template::class);
+    }
+
+    /**
+     * Get the roles for the user.
+     */
+    public function roles() {
+        return $this->belongsToMany(Role::class);
+    }
+
+    public function hasRolePermission($permissionName)
+    {
+        // Récupère toutes les permissions des rôles de l'utilisateur
+        $permissions = $this->roles->pluck('permissions')->flatten()->pluck('name');
+
+        // Vérifie si l'utilisateur a la permission demandée
+        return $permissions->contains($permissionName);
     }
 }

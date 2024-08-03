@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Board;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 
 use Illuminate\Support\Facades\Request;
@@ -20,8 +22,35 @@ it('can join a board with right code', function () {
     // Create one Board
     $board = Board::factory()->create();
 
+    // Create role user, master and player
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    // Create permission for role user
+    $userPermissions = ['create-board', 'join-board'];
+    $createdUserPermissions = [];
+    foreach ($userPermissions as $permissionName) {
+        $createdUserPermissions[] = Permission::factory()->create([
+            'name' => $permissionName,
+        ]);
+    }
+    // Attach permission to the role
+    $roleUser->permissions()->sync(collect($createdUserPermissions)->pluck('id'));
+    // Attach $user to the role user
+    $user->roles()->attach($roleUser);
+
+    // create permission for master
+    $masterPermissions = ['view-board', 'update-board', 'delete-board'];
+    $createdMasterPermissions = [];
+    foreach ($masterPermissions as $permissionName) {
+        $createdMasterPermissions[] = Permission::factory()->create([
+            'name' => $permissionName,
+        ]);
+    }
+    $roleMaster->permissions()->sync(collect($createdMasterPermissions)->pluck('id'));
     // Attach $master to the board with role master
-    $board->users()->attach($master->id, ['role' => 'master']);
+    $board->users()->attach($master->id, ['role_id' => $roleMaster->id]);
 
     // try to join a board with the code $code
     $response = $this->actingAs($user)
@@ -53,6 +82,7 @@ it('can join a board with right code', function () {
     $this->assertDatabaseHas("board_user", [
         "board_id"=> $board->id,
         "user_id" => $user->id,
+        "role_id" => $rolePlayer->id,
     ]);
 
     // Ensure that the board contains 2 users
@@ -68,6 +98,13 @@ it('can join a board with right code', function () {
 it('cannot join boards with wrong or empty invite code', function (string $code) {
     // Create one user
     $user = User::factory()->create();
+
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $permissionJoin = Permission::factory()->create(['name' => 'join-board']);
+
+    $roleUser->permissions()->attach($permissionJoin->id);
+
+    $user->roles()->attach($roleUser->id);
 
     // Simulate user login and send a code
     $response = $this->actingAs($user)
@@ -121,14 +158,11 @@ it('cannot join boards with wrong or empty invite code', function (string $code)
 })->with(["12345", "bonjour", ""]);
 
 it('cannot join a full board', function () {
-    // Create 1 user (master)
-    $user = User::factory()->create();
-    // Create 3 users (players)
+    // Création des utilisateurs et des rôles
+    $master = User::factory()->create();
     $users = User::factory(3)->create();
-    // Create another user (the one who will try to join the full board)
     $userToJoin = User::factory()->create();
 
-    // Create a Board with capacity for 4 users
     $board = Board::factory()->create([
         'name' => 'table pleine',
         'description' => 'la table est pleine et doit exclure toute personne qui essaye de la rejoindre',
@@ -136,16 +170,39 @@ it('cannot join a full board', function () {
         'capacity' => 4,
     ]);
 
-    // Attach users to the Board with their roles
-    $board->users()->attach($user, ['role'=> 'master']);
-    $board->users()->attach($users, ['role'=> 'player']);
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
+
+    // Création of permissions
+    $viewPermission = Permission::factory()->create(['name' => 'view-board']);
+    $leavePermission = Permission::factory()->create(['name' => 'leave-board']);
+    $updatePermission = Permission::factory()->create(['name' => 'update-board']);
+    $deletePermission = Permission::factory()->create(['name' => 'delete-board']);
+    $createPermission = Permission::factory()->create(['name' => 'create-board']);
+    $joinPermission = Permission::factory()->create(['name' => 'join-board']);
+
+    // Attach permissions to roles
+    $roleUser->permissions()->attach([$createPermission->id, $joinPermission->id]);
+    $roleMaster->permissions()->attach([$updatePermission->id, $deletePermission->id, $viewPermission->id]);
+    $rolePlayer->permissions()->attach([$viewPermission->id, $leavePermission->id]);
+
+    // Attach roles to users
+    $userToJoin->roles()->attach($roleUser);
+    $master->roles()->attach($roleUser);
+    $users->each(function ($user) use ($roleUser) {
+        $user->roles()->attach($roleUser);
+    });
+
+    // Attach roles to board users
+    $board->users()->attach($master->id, ['role_id' => $roleMaster->id]);
+    $users->each(function ($user) use ($board, $rolePlayer) {
+        $board->users()->attach($user->id, ['role_id' => $rolePlayer->id]);
+    });
 
     // Simulate the user's attempt to join the board
     $response = $this->actingAs($userToJoin)
-        ->post("/api/boards/join",
-            [
-                "code" => $board->code,
-            ])
+        ->post("/api/boards/join", ["code" => $board->code])
         ->assertStatus(403);
 
     // Refresh the board model
@@ -155,7 +212,7 @@ it('cannot join a full board', function () {
     $response->assertJson([
         'response' => [
             'status_title' => 'No permission',
-            'status_message' => 'User cannot join à full board.',
+            'status_message' => 'User cannot join a full board.',
             'status_code' => 403,
         ]
     ]);
@@ -179,12 +236,24 @@ it('cannot join a full board', function () {
     ]);
 
     // Check user roles on the board
-    $board->users()->each(function (User $users) {
-        $role = $users->pivot->role;
-        if ($users->id == 1) {
-            expect($role)->toBe('master');
+    $board->users->each(function (User $user) use ($master) {
+        // Get specific role from pivot table 'board_user'
+        $roleID = $user->pivot->role_id;
+        $role = Role::find($roleID);
+
+        // verify that the role exists
+        if ($role) {
+            $roleName = $role->name;
+
+            // Check if the role is what we expect
+            if ($user->id == $master->id) {
+                expect($roleName)->toBe('master');
+            } else {
+                expect($roleName)->toBe('player');
+            }
         } else {
-            expect($role)->toBe('player');
+            // If the role does not exist, fail the test
+            $this->fail('Role not found for user ID ' . $user->id);
         }
     });
 });

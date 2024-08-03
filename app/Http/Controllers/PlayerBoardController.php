@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use App\Models\Role;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -123,14 +124,16 @@ class PlayerBoardController extends Controller
             return response()->json([
                 'response' => [
                     'status_title' => 'No permission',
-                    'status_message' => 'User cannot join à full board.',
+                    'status_message' => 'User cannot join a full board.',
                     'status_code' => 403,
                 ]
             ], 403);
         }
 
+        // Retreive the role by name "player"
+        $playerRole = Role::where('name', 'player')->first();
         // Tout les tests passent, on procède à l'ajout de l'user à la Board.
-        $board->users()->attach($user, ["role" => "player"]);
+        $board->users()->attach($user->id, ['role_id'=> $playerRole->id]);
 
         // L'api retourne le Code 201 (Created), l'user à rejoint la Board.
         return response()->json([
@@ -201,7 +204,10 @@ class PlayerBoardController extends Controller
             ], 403);
         }
 
-        if ($foundUser->pivot->role == "master") {
+        $UserRoleID = $foundUser->pivot->role_id;
+        $role = Role::where('id', $UserRoleID)->first();
+        
+        if ($role->name == "master") {
             return response()->json([
                 'response' => [
                     'status_title' => 'No permission',

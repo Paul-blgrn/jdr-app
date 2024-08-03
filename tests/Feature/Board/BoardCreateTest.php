@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\Board;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -12,9 +15,19 @@ use function Pest\Laravel\withoutExceptionHandling;
 //   POSITIVE TEST (CAN)
 // ------------------------
 
-it('can create a board', function () {
+test('user can create a board', function () {
     // Create one User
     $user = User::factory()->create();
+
+    // Créez un rôle avec la permission de créer un tableau
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    $createPermission = Permission::factory()->create(['name' => 'create-board']);
+    $roleUser->permissions()->attach($createPermission->id);
+    $user->roles()->attach($roleUser);
+
+    // Create role Master
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+
 
     // Simulate a user who creates a board with data
     $response = $this->actingAs($user)
@@ -34,17 +47,30 @@ it('can create a board', function () {
         'capacity' => 4,
     ]);
 
-    // get the board in database and return the first result
-    $board = Board::where('name', 'Test Board')->first();
+    // Get the board from the database and return the first result
+    $board = Board::where('name', 'Test Board')->firstOrFail();
 
-    // Check JSON response content
+    // Ensure user is attached to the board with the master role
+    $board->users()->syncWithoutDetaching([$user->id => ['role_id' => $roleMaster->id]]);
+
+    // Parse the JSON response to an array
+    $responseJson = $response->json();
+
+    // Extract the 'board' part of the response and compare it with the expected data
+    $actualBoardData = $responseJson['response']['board'];
+    $expectedBoardData = $board->withCount('users')->get()->toJson();
+
+    // Compare the actual and expected board data
+    $this->assertEquals($expectedBoardData, $actualBoardData);
+
+    // Check JSON response
     $response->assertJson([
         'response' => [
-            'status_code' =>201,
+            'status_code' => 201,
             'status_title' => 'Success',
             'status_message' => 'Board created successfully.',
             'board' => $board->withCount('users')->get()->toJson(),
-        ]
+        ],
     ]);
 
     // Check JSON response structure
@@ -64,6 +90,7 @@ it('can create a board', function () {
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $user->id,
+        'role_id' => $roleMaster->id,
     ]);
 
     // Verify that the code was generated and is unique
@@ -75,6 +102,17 @@ it('can create a board', function () {
 it('generates unique board codes', function () {
     // Create a user
     $user = User::factory()->create();
+
+    // Create roles User & Master
+    $roleUser = Role::factory()->create(['name' => 'user',]);
+    Role::factory()->create(['name' => 'master',]);
+
+    // Create permission for role User
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+    // Attach role to the user
+    $user->roles()->attach($roleUser);
 
     // Create the first and second Board and extract the code
     $boardResponse = $this->actingAs($user)
@@ -103,8 +141,10 @@ it('generates unique board codes', function () {
     // Ensure codes are present and unique
     $this->assertIsString($board1Code);
     $this->assertIsString($board2Code);
+
     $this->assertNotEmpty($board1Code);
     $this->assertNotEmpty($board2Code);
+
     $this->assertNotEquals($board1Code, $board2Code);
 });
 
@@ -113,8 +153,21 @@ test('board code format and length', function () {
     $user = User::factory()->create();
     // Create a board
     $board = Board::factory()->create(['code' => $code = Str::random(10)]);
-    // Attach user to the board with role "master"
-    $board->users()->attach($user->id, ['role' => 'master']);
+
+    // Create roles User & Master
+    $roleUser = Role::factory()->create(['name' => 'user',]);
+    $roleMaster = Role::factory()->create(['name' => 'master',]);
+
+    // Create permission
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+    // Attach role to the user
+    $user->roles()->attach($roleUser);
+
+    // Ensure user is attached to the board with the master role
+    $board->users()->syncWithoutDetaching([$user->id => ['role_id' => $roleMaster->id]]);
 
     // Check that the code is a string and has the correct length
     $this->assertIsString($board->code);
@@ -122,14 +175,28 @@ test('board code format and length', function () {
 });
 
 test('the creator of board have role master and other have role player', function () {
-    // Create one Users
+    // Create one master and two users
     $master = User::factory()->create();
+    $users = User::factory(2)->create();
 
-    // Simulate the creation of the board by the user
+    // Create roles User, Player & Master
+    $roleUser = Role::factory()->create(['name' => 'user']);
+    Role::factory()->create(['name' => 'master']);
+    Role::factory()->create(['name' => 'player']);
+
+    // Create permission
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to role User (user can create boards)
+    $roleUser->permissions()->attach($permission);
+
+    // Attribute role User to $master (before creating the board)
+    $master->roles()->attach($roleUser);
+
     $response = $this->actingAs($master)
         ->post('/api/boards/add', [
-            'name' => 'Test Board',
-            'description' => 'This is a test board.',
+            'name' => 'My First Board',
+            'description' => 'This is my first board.',
             'capacity' => 4,
         ]);
 
@@ -137,29 +204,29 @@ test('the creator of board have role master and other have role player', functio
     $response->assertStatus(201);
 
     // Retrieve the created board from the database
-    $board = Board::where('name', 'Test Board')->first();
+    $board = Board::where('name', 'My First Board')->firstOrFail();
+
+    // Retreive master role in database
+    $masterRole = Role::where('name', 'master')->firstOrFail();
 
     // Check that the user is attached to the board with the role 'master'
     $this->assertDatabaseHas('board_user', [
         'board_id' => $board->id,
         'user_id' => $master->id,
-        'role' => 'master',
+        'role_id' => $masterRole->id,
     ]);
 
-    // Add additional users and assign them as 'players'
-    $players = User::factory(2)->create();
-
-    // Attach the players to the board with the role 'player'
-    $players->each(function($player) use ($board) {
-        $board->users()->attach($player->id, ['role' => 'player']);
-    });
-
+    // Attach the players to the board with the role 'player' AND
     // Check that the players are attached to the board with the role 'player'
-    $players->each(function($player) use ($board) {
+    $users->each(function($player) use ($board) {
+        $playerRole = Role::where('name', 'player')->first();
+
+        $board->users()->syncWithoutDetaching([$player->id => ['role_id' => $playerRole->id]]);
+
         $this->assertDatabaseHas('board_user', [
             'board_id' => $board->id,
             'user_id' => $player->id,
-            'role' => 'player',
+            'role_id' => $playerRole->id,
         ]);
     });
 
@@ -192,6 +259,19 @@ it('cannot create a board without name', function() {
     // Create one User
     $user = User::factory()->create();
 
+    // Create role user
+    $roleUser = Role::factory()->create(['name' => 'user']);
+
+    // Create permission for role user
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+
+    // Attach $user to the role user
+    $user->roles()->attach($roleUser);
+
+
     // Simulate a user who tries to create a board without a name
     $response = $this->actingAs($user)
         ->post('/api/boards/add', [
@@ -212,50 +292,31 @@ it('cannot create a board without name', function() {
     ]);
 });
 
-it('cannot create a board with too short name', function () {
-    // Create one User
-    $user = User::factory()->create();
-
-    // Simulate the user trying to create a board with a short description
-    $response = $this->actingAs($user)
-        ->post('/api/boards/add',[
-            'name' => 'Short',
-            'description' => 'This is a test board with short name.',
-            'capacity' => 4,
-        ]);
-
-    // We expect a status code 422 (validation error)
-    $response->assertStatus(422);
-
-    // Check JSON response content
-    $response->assertJson([
-        'response' => [
-            'status_title' => 'Validation Error',
-            'status_message' => [
-                'name' => [
-                    'The name field must be at least 10 characters.'
-                ]
-            ],
-            'status_code' => 422,
-        ]
-    ]);
-
-     // Check JSON response structure
-     $response->assertJsonStructure([
-        'response' => [
-            'status_title',
-            'status_message',
-            'status_code',
-        ]
-    ]);
-});
-
-it('cannot create board with duplicated or empty name', function (string $name) {
+it('cannot create board with duplicated, too long, too short or empty name', function (string $name) {
     // Create a User
     $user = User::factory()->create();
 
-    // Create a board with a specific name
-    Board::factory()->create(['name' => $name]);
+    // Create role user
+    $roleUser = Role::factory()->create(['name' => 'user']);
+
+    // Create role Master
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+
+    // Create permission for role user
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+
+    // Attach $user to the role user
+    $user->roles()->attach($roleUser);
+
+    // Create a board with the given name only if the name is valid (non-empty and length >= 10)
+    if (!empty($name) && strlen($name) >= 10 && strlen($name) <= 40) {
+        $board = Board::factory()->create(['name' => $name]);
+        // Attach $user to the board with role Master
+        $board->users()->syncWithoutDetaching([$user->id => ['role_id' => $roleMaster->id]]);
+    }
 
     // Simulate the user trying to create another board with the same name
     $response = $this->actingAs($user)
@@ -276,6 +337,30 @@ it('cannot create board with duplicated or empty name', function (string $name) 
                 'status_message' => [
                     'name' => [
                         'The name field is required.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
+        ]);
+    } else if (strlen($name) < 10) {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'name' => [
+                        'The name field must be at least 10 characters.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
+        ]);
+    } else if (strlen($name) > 40) {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'name' => [
+                        'The name field must not be greater than 40 characters.',
                     ]
                 ],
                 'status_code' => 422,
@@ -305,16 +390,33 @@ it('cannot create board with duplicated or empty name', function (string $name) 
             'status_code',
         ]
     ]);
-})->with(["My Board", "12345", ""]);
 
-it('cannot create a board without description', function() {
-    // Create one User
+})->with(["My Duplicated Board", "12345", "My too long board name with over than 50 caracters maximum", ""]);
+
+it('cannot create board with too short, too long or empty description', function(string $description) {
+    // Create a User
     $user = User::factory()->create();
+
+    // Create role user
+    $roleUser = Role::factory()->create(['name' => 'user']);
+
+    // Create role Master
+    $roleMaster = Role::factory()->create(['name' => 'master']);
+
+    // Create permission for role user
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+
+    // Attach $user to the role user
+    $user->roles()->attach($roleUser);
 
     // Simulate a user who tries to create a board without a name
     $response = $this->actingAs($user)
         ->post('/api/boards/add', [
             'name' => 'Test Board',
+            'description' => $description,
             'capacity' => 4,
         ]);
 
@@ -322,59 +424,71 @@ it('cannot create a board without description', function() {
     $response->assertStatus(422);
 
     // Check JSON response content
-    $response->assertJsonStructure([
-        'response' => [
-            'status_title',
-            'status_message',
-            'status_code',
-        ]
-    ]);
-});
-
-it('cannot create a board with too short description', function () {
-    // Create a User
-    $user = User::factory()->create();
-
-    // Simulate the user trying to create a board with a short description
-    $response = $this->actingAs($user)
-        ->post('/api/boards/add', [
-            'name' => 'Test Board',
-            'description' => 'Short',
-            'capacity' => 4,
+    if (empty($description)) {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'description' => [
+                        'The description field is required.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
         ]);
-
-    // We expect a status code 422 (validation error)
-    $response->assertStatus(422);
-
-    // Check JSON response content
-    $response->assertJson([
-        'response' => [
-            'status_title' => 'Validation Error',
-            'status_message' => [
-                'description' => [
-                    'The description field must be at least 20 characters.'
-                ]
-            ],
-            'status_code' => 422,
-        ]
-    ]);
+    } else if (strlen($description) < 20) {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'description' => [
+                        'The description field must be at least 20 characters.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
+        ]);
+    } else if (strlen($description) > 70) {
+        $response->assertJson([
+            'response' => [
+                'status_title' => 'Validation Error',
+                'status_message' => [
+                    'description' => [
+                        'The description field must not be greater than 70 characters.',
+                    ]
+                ],
+                'status_code' => 422,
+            ]
+        ]);
+    }
 
     // Check JSON response content
     $response->assertJsonStructure([
         'response' => [
             'status_title',
             'status_message' => [
-                'description'
+                'description',
             ],
             'status_code',
         ]
     ]);
-
-});
+})->with(["12345", "My too long board description with over than 70 caracters maximum, yeah its very long", ""]);
 
 it('cannot create a board with capacity less than 2', function () {
     // Create one User
     $user = User::factory()->create();
+
+    // Create role user
+    $roleUser = Role::factory()->create(['name' => 'user']);
+
+    // Create permission for role user
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+
+    // Attach $user to the role user
+    $user->roles()->attach($roleUser);
 
     // Simulate a user who tries to create a board with invalid capacity
     $response = $this->actingAs($user)
@@ -413,6 +527,18 @@ it('cannot create a board with capacity less than 2', function () {
 it('cannot create a board with too high capacity', function() {
     // Create a User
     $user = User::factory()->create();
+
+    // Create role user
+    $roleUser = Role::factory()->create(['name' => 'user']);
+
+    // Create permission for role user
+    $permission = Permission::factory()->create(['name' => 'create-board']);
+
+    // Attach permission to the role
+    $roleUser->permissions()->attach($permission);
+
+    // Attach $user to the role user
+    $user->roles()->attach($roleUser);
 
     // Simulate the user trying to create a board with a high capacity
     $response = $this->actingAs($user)

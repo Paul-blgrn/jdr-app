@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('templates', function (Blueprint $table) {
+        Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable(false);
-            $table->json('content')->nullable(false);
-            $table->tinyInteger('default')->default(0);
-            $table->enum('type', ['personnage', 'inventaire', 'quete', 'competences', 'note', 'autres'])->default('autres');
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('templates');
+        Schema::dropIfExists('permissions');
     }
 };

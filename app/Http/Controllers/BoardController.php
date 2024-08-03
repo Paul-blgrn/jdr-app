@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Board;
+use App\Models\Role;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -53,8 +54,8 @@ class BoardController extends Controller
     public function store(Request $request) {
         // Validate the requested data
         $rules = [
-            'name' => 'bail|required|string|unique:boards,name|min:10|max:50',
-            'description' => 'bail|required|string|min:20|max:255',
+            'name' => 'bail|required|string|unique:boards,name|min:10|max:40',
+            'description' => 'bail|required|string|min:20|max:70',
             'capacity' => 'bail|required|integer|min:2|max:20',
         ];
 
@@ -74,16 +75,27 @@ class BoardController extends Controller
         $validatedData = $validator->validated();
         $validatedData['code'] = $this->generateUniqueCode();
 
-        // dd('code 1: '. $this->generateUniqueCode() . ' code 2: ' . $this->generateUniqueCode());
-
         // Retrieve the authenticated user
         $user = auth()->user();
 
         // Create a new board with the validated data
         $board = Board::create($validatedData);
 
+        // Retreive the role by name "master"
+        $masterRole = Role::where('name', 'master')->first();
+        // Check if the master role exists
+        if (!$masterRole) {
+            return response()->json([
+                'response' => [
+                    'status_code' => 500,
+                    'status_title' => 'Not Found',
+                    'status_message' => 'The master role does not exist.',
+                ],
+            ], 500);
+        }
+
         // Attach the authenticated user to the board with the role 'master'
-        $board->users()->attach($user->id, ['role' => 'master']);
+        $board->users()->attach($user->id, ['role_id' => $masterRole->id]);
 
         // Return a JSON response with the created board details
         return response()->json([
@@ -120,8 +132,8 @@ class BoardController extends Controller
     public function update(Request $request, $id) {
         // Validate the requested data
         $rules = [
-            'name' => 'bail|required|string|unique:boards,name|min:10|max:50',
-            'description' => 'bail|required|string|min:20|max:255',
+            'name' => 'bail|required|string|unique:boards,name|min:10|max:40',
+            'description' => 'bail|required|string|min:20|max:70',
             'capacity' => 'bail|required|integer|min:2|max:20',
         ];
 
@@ -143,21 +155,6 @@ class BoardController extends Controller
         // Retreive the board
         $board = Board::findOrFail($id);
 
-        // Retrieve the authenticated user
-        $user = auth()->user();
-
-        // Retrieve the user from the board and check role
-        $foundUser = $board->users()->where('user_id', $user->id)->first();
-        if ($foundUser->pivot->role !== 'master') {
-            return response()->json([
-                'response' => [
-                    'status_title' => 'No permission',
-                    'status_message' => 'Player cannot update the board.',
-                    'status_code' => 403,
-                ]
-            ], 403);
-        }
-
         // Update the board with validated data
         $board->update($validatedData);
 
@@ -178,26 +175,8 @@ class BoardController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($boardId) {
-        // Retrieve the authenticated user
-        $user = auth()->user();
-
         // Retrieve the board by its ID
         $board = Board::findOrFail($boardId);
-
-        // Retrieve the user from the board
-        $foundUser = $board->users()->where('user_id', $user->id)->first();
-
-        // Check if the authenticated user has the "master" role for the board
-        if ($foundUser->pivot->role !== "master") {
-            // Return a JSON response indicating insufficient permissions (403 Forbidden)
-            return response()->json([
-                'response' => [
-                    'status_title' => 'No permission',
-                    'status_message' => 'The user with role Player cannot delete a board.',
-                    'status_code' => 403,
-                ]
-            ], 403);
-        }
 
         // Delete the board from the database
         $board->delete();
@@ -206,7 +185,7 @@ class BoardController extends Controller
         return response()->json([
             'response' => [
                 'status_title' => 'Success',
-                'status_message' => 'The board ha been deleted successfully.',
+                'status_message' => 'The board has been deleted successfully.',
                 'status_code' => 200,
             ]
         ], 200);
