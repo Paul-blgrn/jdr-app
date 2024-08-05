@@ -9,15 +9,11 @@ use App\Http\Controllers\TemplateController;
 use App\Http\Middleware\CheckUserRoleAndPermission;
 
 use Illuminate\Support\Facades\Auth;
-
-// Define middlewares
-// Route::aliasMiddleware('permission', CheckPermission::class);
-
 if(app()->environment() === 'local') {
     Auth::loginUsingId(1);
 }
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 

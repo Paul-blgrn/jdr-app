@@ -6,8 +6,8 @@ it('show homepage', function () {
 });
 
 it('show login page', function () {
-    $this->get('/login')
-    ->assertStatus(200);
+    $this->post('/login')
+    ->assertStatus(302);
 });
 
 it('sent a 302 error when guests try to see boards', function () {
