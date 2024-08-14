@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Validator;
 
 class TemplateController extends Controller
 {
+    public function index() {
+
+    }
+    
     public function store(Request $request) {
         // Validate the requested data
         $rules = [
@@ -45,7 +49,11 @@ class TemplateController extends Controller
         ], 201);
     }
 
-    public function index() {
-        
+    public function update() {
+
+    }
+
+    public function destroy() {
+
     }
 }

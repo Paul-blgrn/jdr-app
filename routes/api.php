@@ -8,6 +8,10 @@ use App\Http\Controllers\PlayerBoardController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Middleware\CheckUserRoleAndPermission;
 
+// use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+
+// Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
+
 use Illuminate\Support\Facades\Auth;
 if(app()->environment() === 'local') {
     Auth::loginUsingId(1);
