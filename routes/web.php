@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 Route::get('/', function () {
     return ['Laravel' => app()->version()];
@@ -10,12 +12,24 @@ Route::get('/', function () {
 
 Route::options('/{any}', function () {
     return response()->json(['message' => 'Preflight Request']);
-})->where('any', '.*')->middleware(\App\Http\Middleware\CorsMiddleware::class);
+})->where('any', '.*')->middleware(\Illuminate\Http\Middleware\HandleCors::class);
 
-Route::get('/auth/check', [AuthenticatedSessionController::class, 'checkAuth']);
+// Route::post('/sanctum/token', function (Request $request) {
+//     $request->validate([
+//         'email' => 'required|email',
+//         'password' => 'required',
+//         'device_name' => 'required',
+//     ]);
 
-Route::get('/sanctum/csrf-cookie', function () {
-    return response()->json(['message' => 'CSRF cookie set']);
-})->middleware(\Illuminate\Http\Middleware\HandleCors::class);
+//     $user = User::where('email', $request->email)->first();
+
+//     if (! $user || ! Hash::check($request->password, $user->password)) {
+//         throw ValidationException::withMessages([
+//             'email' => ['The provided credentials are incorrect.'],
+//         ]);
+//     }
+
+//     return $user->createToken($request->device_name)->plainTextToken;
+// });
 
 require __DIR__.'/auth.php';

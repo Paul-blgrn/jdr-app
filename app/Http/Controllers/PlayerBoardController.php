@@ -17,42 +17,60 @@ class PlayerBoardController extends Controller
     {
         // Retreive authenticated user
         $user = auth()->user();
-
-        // Check if user is authenticated
-        if (!$user) {
-            return response()->json([
-                'response' => [
-                    'status_title' => 'Unauthenticated',
-                    'status_message' => 'You are not authenticated !',
-                    'status_code' => 401,
-                ]
-            ], 401);
-        }
-
         $perPage = 5;
-        try {
-            // Fetch user's boards with pagination
-            $boards = $user->boards()->withCount('users')->paginate($perPage);
 
-            return response()->json([
-                'meta' => [
-                    'total' => $boards->total(),
-                    'per_page' => $boards->perPage(),
-                    'current_page' => $boards->currentPage(),
-                    'last_page' => $boards->lastPage(),
-                ],
-                'data' => $boards->items(),
-            ]);
-
-        } catch (Exception $e) {
+        $masterRole = Role::where('name', 'master')->first();
+        // check if role "master" exists
+        if (!$masterRole) {
             return response()->json([
                 'response' => [
                     'status_title' => 'Error',
-                    'status_message' => 'An error occurred while fetching boards',
-                    'status_code' => 500,
+                    'status_message' => 'Role not found !',
+                    'status_code' => 404,
                 ]
-            ], 500);
+            ], 404);
         }
+
+        $playerRole = Role::where('name', 'player')->first();
+        // check if role "player" exists
+        if (!$playerRole) {
+            return response()->json([
+                'response' => [
+                    'status_title' => 'Error',
+                    'status_message' => 'Role not found !',
+                    'status_code' => 404,
+                ]
+            ], 404);
+        }
+
+        $createdBoardsQuery = $user->boards()->wherePivot('role_id', $masterRole->id)->withCount('users');
+        $boardsCreated = $createdBoardsQuery->paginate($perPage, ['*'], 'created_page');
+
+        $joinedBoardsQuery = $user->boards()->wherePivot('role_id', $playerRole->id)->withCount('users');
+        $boardsJoined = $joinedBoardsQuery->paginate($perPage, ['*'], 'joined_page');
+
+        // Response
+        return response()->json([
+            'meta' => [
+                'created_boards' => [
+                    'total' => $boardsCreated->total(),
+                    'per_page' => $boardsCreated->perPage(),
+                    'current_page' => $boardsCreated->currentPage(),
+                    'last_page' => $boardsCreated->lastPage(),
+                ],
+                'joined_boards' => [
+                    'total' => $boardsJoined->total(),
+                    'per_page' => $boardsJoined->perPage(),
+                    'current_page' => $boardsJoined->currentPage(),
+                    'last_page' => $boardsJoined->lastPage(),
+                ],
+            ],
+            'data' => [
+                'created_boards' => $boardsCreated->items(),
+                'joined_boards' => $boardsJoined->items(),
+            ],
+        ]);
+
     }
 
     /**
@@ -68,12 +86,11 @@ class PlayerBoardController extends Controller
      */
     public function store(Request $request)
     {
-        // Validation des données
+        // Data Validation
         $validator = Validator::make($request->all(), [
             'code' => 'required|string'
         ]);
-
-        // Si la validation échoue, on renvoie une erreur
+        // If validation fails, an error is returned.
         if ($validator->fails()) {
             return response()->json([
                 'response' => [
@@ -83,11 +100,9 @@ class PlayerBoardController extends Controller
                 ]
             ], 422);
         }
-
-        // Retrouve la première board avec pour code la valeur indiqué.
+        // Find the first board with the code value indicated.
         $board = Board::where('code', $request->code)->first();
-
-        // Si la board n'existe pas, on renvoie une erreur
+        // If the board doesn't exist, we return an error
         if (!$board) {
             return response()->json([
                 'response' => [
@@ -97,16 +112,13 @@ class PlayerBoardController extends Controller
                 ]
             ], 422);
         }
-
-        // Obtenir l'utilisateur authentifié
+        // Get authenticated user
         $user = auth()->user();
-
-        // Vérification si l'utilisateur est déjà associé à un board avec le même code
-        // en comptant le nombre de résultats correspondants.
+        // Checking if the user is already associated with a board with the same code
+        // by counting the number of matching results.
         $countBoard = $user->boards()->where('code', $request->code)->count();
-
         if ($countBoard > 0) {
-            // L'utilisateur a déjà accès à ce board
+            // The user already have access on this board
             return response()->json([
                 'response' => [
                     'status_title' => 'Validation Error',
@@ -115,12 +127,11 @@ class PlayerBoardController extends Controller
                 ]
             ], 422);
         }
-
-        // Compter les utilisateurs attachés à la Board
+        // Count users attached to the Board
         $countUsers = $board->users()->count();
-        // Tester la capacité de la Board
+        // Test the capacity of the Board
         if ($countUsers >= $board->capacity) {
-            // La Board est pleine, on envoie une erreur
+            // The Board is full, we send an error
             return response()->json([
                 'response' => [
                     'status_title' => 'No permission',
@@ -129,13 +140,11 @@ class PlayerBoardController extends Controller
                 ]
             ], 403);
         }
-
         // Retreive the role by name "player"
         $playerRole = Role::where('name', 'player')->first();
-        // Tout les tests passent, on procède à l'ajout de l'user à la Board.
+        // All the tests pass, we proceed to add the user to the Board.
         $board->users()->attach($user->id, ['role_id'=> $playerRole->id]);
-
-        // L'api retourne le Code 201 (Created), l'user à rejoint la Board.
+        // The API returns Code 201 (Created), the user has joined the Board.
         return response()->json([
             'response' => [
                 'status_title' => 'Success',
@@ -206,7 +215,7 @@ class PlayerBoardController extends Controller
 
         $UserRoleID = $foundUser->pivot->role_id;
         $role = Role::where('id', $UserRoleID)->first();
-        
+
         if ($role->name == "master") {
             return response()->json([
                 'response' => [

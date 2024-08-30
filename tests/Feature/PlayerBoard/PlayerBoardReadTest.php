@@ -21,12 +21,12 @@ it("sent a 404 error when accessing a board that do not exist", function () {
     $user = User::factory()->make();
 
     // the user tries to access a board that does not exist, a 404 error is returned
-    actingAs($user)
+    $this->actingAs($user)
     ->get("/api/board/1")
     ->assertStatus(404);
 
     // Same case here but with different uri
-    actingAs($user)
+    $this->actingAs($user)
     ->get("/api/board/bonjour")
     ->assertStatus(404);
 });
@@ -34,11 +34,13 @@ it("sent a 404 error when accessing a board that do not exist", function () {
 it('paginate boards', function () {
     // Create one User
     $user = User::factory()->create();
+    $user2 = User::factory()->create();
     $boards = Board::factory(15)->create();
 
     // Create roles
     $roleUser = Role::factory()->create(['name' => 'user']);
     $roleMaster = Role::factory()->create(['name' => 'master']);
+    $rolePlayer = Role::factory()->create(['name' => 'player']);
 
     // Create permission
     $permissionView = Permission::factory()->create(['name' => 'view-board']);
@@ -49,8 +51,9 @@ it('paginate boards', function () {
     // Attach global roles to users
     $user->roles()->attach($roleUser->id);
 
-    $boards->each(function($board) use ($user, $roleMaster) {
+    $boards->each(function($board) use ($user, $user2, $roleMaster, $rolePlayer) {
         $board->users()->attach($user->id, ['role_id' => $roleMaster->id]);
+        $board->users()->attach($user2->id, ['role_id' => $rolePlayer->id]);
     });
 
     // Simulate the user fetching the boards with pagination
@@ -60,22 +63,22 @@ it('paginate boards', function () {
     // We expect a status code 200 (OK)
     $response->assertStatus(200);
 
+
     $responseData = $response->json();
 
     // Assert that there are boards in the current page
     $this->assertNotEmpty($responseData['data']);
 
     // Assert that total items is 15
-    $this->assertEquals($responseData['meta']['total'], 15);
+    $this->assertEquals($responseData['meta']['created_boards']['total'], 15);
 
     // Assert that item per page is 5
-    $this->assertEquals($responseData['meta']['per_page'], 5);
+    $this->assertEquals($responseData['meta']['created_boards']['per_page'], 5);
 
     // Assert that the first page contains 5 items
-    $this->assertCount(5, $responseData['data']);
+    $this->assertCount(5, $responseData['data']['created_boards']);
 
 });
-
 
 it('displays all the user boards and does not send back other players boards', function () {
     // Create one user and associate 3 Boards with him
@@ -108,27 +111,31 @@ it('displays all the user boards and does not send back other players boards', f
     // Check JSON response structure
     $response->assertJsonStructure([
         'meta' => [
-            'total',
-            'per_page',
-            'current_page',
-            'last_page',
+            'created_boards' => [
+                'total',
+                'per_page',
+                'current_page',
+                'last_page',
+            ],
         ],
         'data' => [
-            '*' => [
-                'id',
-                'name',
-                'description',
-                'capacity',
-                'code',
-                'created_at',
-                'updated_at',
-                'users_count',
-                'pivot' => [
-                    'user_id',
-                    'board_id',
-                    'role_id',
+            'created_boards' => [
+                '*' => [
+                    'id',
+                    'name',
+                    'description',
+                    'capacity',
+                    'code',
+                    'created_at',
+                    'updated_at',
+                    'users_count',
+                    'pivot' => [
+                        'user_id',
+                        'board_id',
+                        'role_id',
+                    ],
                 ],
-            ],
+            ]
         ],
     ]);
 
@@ -139,9 +146,9 @@ it('displays all the user boards and does not send back other players boards', f
     expect($finalData)->not->toBeEmpty();
 
     // Check that $data contains the right number of boards
-    expect($finalData['data'])->toHaveCount($user->boards->count());
+    expect($finalData['data']['created_boards'])->toHaveCount($user->boards->count());
 
-    $pluckedData = collect($finalData['data'])->pluck('id')->toArray();
+    $pluckedData = collect($finalData['data']['created_boards'])->pluck('id')->toArray();
     $pluckedUser = $user->boards->pluck('id')->toArray();
     // Check IDS
     expect($pluckedData)->toEqual($pluckedUser);
@@ -149,7 +156,7 @@ it('displays all the user boards and does not send back other players boards', f
     // Verify that the response contains the correct information
     $user->boards->each(function (Board $board) use ($finalData) {
         // Get the first element of $data
-        $boardData = collect($finalData['data'])->firstWhere('id', $board->id);
+        $boardData = collect($finalData['data']['created_boards'])->firstWhere('id', $board->id);
 
         // Check that the board details are correct
         expect($boardData['name'])->toBe($board->name);

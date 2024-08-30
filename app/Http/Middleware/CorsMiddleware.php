@@ -17,30 +17,28 @@ class CorsMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->getMethod() === 'OPTIONS') {
-            $response = response('', 204);
-        } else {
-            $response = $next($request);
+        if ($request->isMethod('OPTIONS')) {
+            // Handling preflight requests
+            return response('', 204)
+                ->header('Access-Control-Allow-Origin', implode(',', config('cors.allowed_origins')))
+                ->header('Access-Control-Allow-Methods', implode(',', config('cors.allowed_methods')))
+                ->header('Access-Control-Allow-Headers', implode(',', config('cors.allowed_headers')))
+                ->header('Access-Control-Max-Age', config('cors.max_age'));
         }
 
-        $allowedOrigins = config('cors.allowed_origins');
-        $allowedHeaders = config('cors.allowed_headers');
-        $allowedMethod = config('cors.allowed_methods');
-        $exposedHeaders = config('cors.exposed_headers');
-        $maxAge = config('cors.max_age');
-        $supportCredentials = config('cors.supports_credentials');
+        $response = $next($request);
 
-        if ($request->isMethod('GET') && $request->path() === 'sanctum/csrf-cookie') {
-            $response = response('', 200);
-        }
+        // Set CORS headers
+        $response->headers->set('Access-Control-Allow-Origin', implode(',', config('cors.allowed_origins')));
+        $response->headers->set('Access-Control-Allow-Methods', implode(',', config('cors.allowed_methods')));
+        $response->headers->set('Access-Control-Allow-Headers', implode(',', config('cors.allowed_headers')));
+        $response->headers->set('Access-Control-Expose-Headers', implode(',', config('cors.exposed_headers')));
+        $response->headers->set('Access-Control-Max-Age', config('cors.max_age'));
+        $response->headers->set('Access-Control-Allow-Credentials', config('cors.supports_credentials') ? 'true' : 'false');
 
-        $response->headers->set('Access-Control-Allow-Origin', implode(',', $allowedOrigins));
-        $response->headers->set('Access-Control-Request-Headers', implode(',', $allowedOrigins));
-        $response->headers->set('Access-Control-Allow-Methods', implode(',', $allowedMethod));
-        $response->headers->set('Access-Control-Allow-Headers', implode(',', $allowedHeaders));
-        $response->headers->set('Access-Control-Max-Age', $maxAge);
-        $response->headers->set('Access-Control-Expose-Headers', implode(',', $exposedHeaders));
-        $response->headers->set('Access-Control-Allow-Credentials', $supportCredentials);
+        // Set security headers
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('X-XSS-Protection', '1; mode=block');
 
         return $response;
     }

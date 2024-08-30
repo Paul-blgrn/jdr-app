@@ -15,11 +15,12 @@ use function Pest\Laravel\withoutExceptionHandling;
 //   POSITIVE TEST (CAN)
 // ------------------------
 
+
 test('user can create a board', function () {
     // Create one User
     $user = User::factory()->create();
 
-    // Créez un rôle avec la permission de créer un tableau
+    // Create a role with permission to create a board
     $roleUser = Role::factory()->create(['name' => 'user']);
     $createPermission = Permission::factory()->create(['name' => 'create-board']);
     $roleUser->permissions()->attach($createPermission->id);

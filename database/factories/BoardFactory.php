@@ -41,7 +41,8 @@ class BoardFactory extends Factory
             for ($i = 0; $i < $codeLength; $i++) {
                 $code .= $characters[rand(0, strlen($characters) - 1)];
             }
-        } while (\App\Models\Board::where('code', $code)->exists()); // Ensure code is unique
+            // Ensure code is unique
+        } while (\App\Models\Board::where('code', $code)->exists());
 
         return $code;
     }

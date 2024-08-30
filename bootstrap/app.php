@@ -16,8 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CorsMiddleware::class,
@@ -26,12 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
             \Illuminate\Http\Middleware\TrustProxies::class,
-            \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \App\Http\Middleware\CorsMiddleware::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             // \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             // \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             // \Illuminate\Cookie\Middleware\EncryptCookies::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,

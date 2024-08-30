@@ -1,8 +1,12 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+use function Pest\Laravel\withoutExceptionHandling;
 
 test('users can authenticate using the login screen', function () {
+    withoutExceptionHandling();
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
@@ -11,7 +15,17 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertNoContent();
+
+    $response->assertStatus(200);
+
+    $response->assertJsonStructure([
+        'message',
+        'user' => [
+            'id',
+            'name',
+            'email',
+        ],
+    ]);
 });
 
 test('users can not authenticate with invalid password', function () {
@@ -32,4 +46,120 @@ test('users can logout', function () {
 
     $this->assertGuest();
     $response->assertNoContent();
+});
+
+it('create an authentication token when login', function () {
+    // create one test user
+    $user = User::factory()->create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password123'),
+    ]);
+
+    // Loggin in as Test user
+    $response = $this->postJson('/login', [
+        'email' => 'test@example.com',
+        'password' => 'password123',
+    ]);
+
+    // Check status and structure in the response
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'user' => [
+                'id',
+                'name',
+                'email',
+                'email_verified_at',
+                'created_at',
+                'updated_at',
+            ],
+            'token',
+        ]);
+
+    // Check if token ha been generated
+    $this->assertNotNull($response->json('token'));
+});
+
+it('deletes the current token on logout', function () {
+    // create one test user
+    $user = User::factory()->create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password123'),
+    ]);
+
+    // create a token for the user
+    $user->createToken('auth_token')->plainTextToken;
+
+    // Check if the token is created
+    $this->assertNotEmpty($user->tokens);
+
+    // Disconnect the user
+    $response = $this->actingAs($user)->postJson('/logout');
+
+    // Check if token is deleted
+    $this->assertEmpty($user->fresh()->tokens);
+
+    $response->assertStatus(204);
+});
+
+it('deletes all user tokens on logout', function () {
+    // create one test user
+    $user = User::factory()->create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password123'),
+    ]);
+
+    // Generate multiple auth tokens
+    $user->createToken('auth_token_1')->plainTextToken;
+    $user->createToken('auth_token_2')->plainTextToken;
+    $user->createToken('auth_token_3')->plainTextToken;
+
+    // Check that tokens is created
+    $this->assertCount(3, $user->tokens);
+
+    // Disconnect the user
+    $response = $this->actingAs($user)->postJson('/logout');
+
+    // Check if tokens are deleted
+    $this->assertEmpty($user->fresh()->tokens);
+
+    $response->assertStatus(204);
+});
+
+it('can access with a valid token', function () {
+    // Create a user
+    $user = User::factory()->create();
+
+    // Generate a token for the user
+    $token = $user->createToken('Test Token')->plainTextToken;
+
+    // Make a request to an API route that requires authentication
+    $response = $this->withHeaders([
+        'Authorization' => 'Bearer ' . $token,
+    ])->getJson('/api/user');
+
+    // Check if the request was successful
+    $response->assertStatus(200);
+});
+
+it('validates a valid token', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    $response = $this->withHeaders([
+        'Authorization' => "Bearer $token",
+    ])->get('/auth/check');
+
+    $response->assertStatus(200);
+});
+
+it('rejects an invalid token', function () {
+    $invalidToken = 'invalid_token';
+    $response = $this->withHeaders([
+        'Authorization' => "Bearer $invalidToken",
+    ])->get('/auth/check');
+
+    $response->assertStatus(401);
 });

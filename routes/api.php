@@ -8,18 +8,9 @@ use App\Http\Controllers\PlayerBoardController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Middleware\CheckUserRoleAndPermission;
 
-// use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
-
-// Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
-
-use Illuminate\Support\Facades\Auth;
-if(app()->environment() === 'local') {
-    Auth::loginUsingId(1);
-}
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::get('/user', function (Request $request) {
     return $request->user();
-});
+})->middleware('auth:sanctum');
 
 Route::middleware('auth:sanctum')->group(function () {
     // -----------------
@@ -48,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Add a Board
     Route::post('/boards/add', [BoardController::class, 'store'])
         ->middleware([CheckUserRoleAndPermission::class . ':user']);
+
 
     // Update a Board
     Route::put('/board/{board}/update', [BoardController::class, 'update'])
