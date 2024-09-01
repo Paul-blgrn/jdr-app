@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -37,16 +38,41 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        $existingToken  = $user->tokens()->where('name', 'auth_token')->latest()->first();
+        $expiration = now()->addMinutes(120);
+        if (!$existingToken ) {
+            $token = $user->createToken('auth_token', ['*'], $expiration)->plainTextToken;
+        } else {
+            $user->tokens()->delete();
+            $token = $user->createToken('auth_token', ['*'], $expiration)->plainTextToken;
+        }
+
         $userData = [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
         ];
 
+        // Retreive the role by name "user"
+        $userRole = Role::where('name', 'user')->first();
+        // Check if the user role exists
+        if (!$userRole) {
+            return response()->json([
+                'response' => [
+                    'status_code' => 404,
+                    'status_title' => 'Not Found',
+                    'status_message' => 'The user role does not exist.',
+                ],
+            ], 404);
+        }
+
+        $user->roles()->attach($userRole->id);
+
         //return response()->noContent();
         return response()->json([
             'message' => 'Registration successful',
             'user' => $userData,
+            'token' => $token,
         ]);
     }
 }

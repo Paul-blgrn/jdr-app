@@ -87,11 +87,11 @@ class BoardController extends Controller
         if (!$masterRole) {
             return response()->json([
                 'response' => [
-                    'status_code' => 500,
+                    'status_code' => 404,
                     'status_title' => 'Not Found',
                     'status_message' => 'The master role does not exist.',
                 ],
-            ], 500);
+            ], 404);
         }
 
         // Attach the authenticated user to the board with the role 'master'
