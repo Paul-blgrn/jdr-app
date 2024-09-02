@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -97,8 +98,7 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
-        // Générer un nouveau token si aucun token n'est fourni
-        $response = response()->json([
+        return response()->json([
             'authenticated' => true,
             'user' => [
                 'id' => $user->id,
@@ -106,8 +106,6 @@ class AuthenticatedSessionController extends Controller
                 'email' => $user->email,
             ]
         ]);
-
-        return $response;
     }
 
     /**

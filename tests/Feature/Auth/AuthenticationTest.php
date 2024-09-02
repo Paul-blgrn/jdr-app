@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 use function Pest\Laravel\withoutExceptionHandling;
@@ -45,7 +47,11 @@ test('users can logout', function () {
     $response = $this->actingAs($user)->post('/logout');
 
     $this->assertGuest();
-    $response->assertNoContent();
+    $response->assertStatus(200);
+
+    $response->assertJson([
+        'message' => 'Logged out successfully.',
+    ]);
 });
 
 it('create an authentication token when login', function () {
@@ -53,13 +59,13 @@ it('create an authentication token when login', function () {
     $user = User::factory()->create([
         'name' => 'Test User',
         'email' => 'test@example.com',
-        'password' => Hash::make('password123'),
+        'password' => Hash::make('Str0ngP@ssw0rd!'),
     ]);
 
     // Loggin in as Test user
     $response = $this->postJson('/login', [
         'email' => 'test@example.com',
-        'password' => 'password123',
+        'password' => 'Str0ngP@ssw0rd!',
     ]);
 
     // Check status and structure in the response
@@ -69,9 +75,6 @@ it('create an authentication token when login', function () {
                 'id',
                 'name',
                 'email',
-                'email_verified_at',
-                'created_at',
-                'updated_at',
             ],
             'token',
         ]);
@@ -85,7 +88,7 @@ it('deletes the current token on logout', function () {
     $user = User::factory()->create([
         'name' => 'Test User',
         'email' => 'test@example.com',
-        'password' => Hash::make('password123'),
+        'password' => Hash::make('Str0ngP@ssw0rd!'),
     ]);
 
     // create a token for the user
@@ -100,7 +103,10 @@ it('deletes the current token on logout', function () {
     // Check if token is deleted
     $this->assertEmpty($user->fresh()->tokens);
 
-    $response->assertStatus(204);
+    $response->assertStatus(200);
+    $response->assertJson([
+        'message' => 'Logged out successfully.',
+    ]);
 });
 
 it('deletes all user tokens on logout', function () {
@@ -125,7 +131,10 @@ it('deletes all user tokens on logout', function () {
     // Check if tokens are deleted
     $this->assertEmpty($user->fresh()->tokens);
 
-    $response->assertStatus(204);
+    $response->assertStatus(200);
+    $response->assertJson([
+        'message' => 'Logged out successfully.',
+    ]);
 });
 
 it('can access with a valid token', function () {
@@ -145,8 +154,11 @@ it('can access with a valid token', function () {
 });
 
 it('validates a valid token', function () {
+    withoutExceptionHandling();
     $user = User::factory()->create();
     $token = $user->createToken('auth_token')->plainTextToken;
+
+    $this->actingAs($user);
 
     $response = $this->withHeaders([
         'Authorization' => "Bearer $token",
@@ -156,10 +168,23 @@ it('validates a valid token', function () {
 });
 
 it('rejects an invalid token', function () {
+    $user = User::factory()->create();
     $invalidToken = 'invalid_token';
+
+    $this->actingAs($user);
+
     $response = $this->withHeaders([
         'Authorization' => "Bearer $invalidToken",
     ])->get('/auth/check');
 
     $response->assertStatus(401);
 });
+
+it('cannot have token if unauthenticated', function () {
+    $request = Request::create('/', 'GET');
+    $response = (new AuthenticatedSessionController)->checkAuth($request);
+
+    expect($response->getContent())->toEqual(json_encode(['authenticated' => false]));
+    expect($response->getStatusCode())->toEqual(200);
+});
+
