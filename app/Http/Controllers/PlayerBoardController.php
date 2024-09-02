@@ -19,55 +19,60 @@ class PlayerBoardController extends Controller
         $user = auth()->user();
         $perPage = 5;
 
+        // check the role "master" and init $boardsCreated
         $masterRole = Role::where('name', 'master')->first();
+        $boardsCreated = [];
+        $metaCreatedBoards = [
+            'total' => 0,
+            'per_page' => $perPage,
+            'current_page' => 1,
+            'last_page' => 1,
+        ];
+
         // check if role "master" exists
-        if (!$masterRole) {
-            return response()->json([
-                'response' => [
-                    'status_title' => 'Error',
-                    'status_message' => 'Role not found !',
-                    'status_code' => 404,
-                ]
-            ], 404);
+        if ($masterRole) {
+            $createdBoardsQuery = $user->boards()->wherePivot('role_id', $masterRole->id)->withCount('users');
+            $boardsCreatedPaginator = $createdBoardsQuery->paginate($perPage, ['*'], 'created_page');
+            $boardsCreated = $boardsCreatedPaginator->items();
+            $metaCreatedBoards = [
+                'total' => $boardsCreatedPaginator->total(),
+                'per_page' => $boardsCreatedPaginator->perPage(),
+                'current_page' => $boardsCreatedPaginator->currentPage(),
+                'last_page' => $boardsCreatedPaginator->lastPage(),
+            ];
         }
 
+        // check the role "player" and init $boardsJoined
         $playerRole = Role::where('name', 'player')->first();
+        $boardsJoined = [];
+        $metaJoinedBoards = [
+            'total' => 0,
+            'per_page' => $perPage,
+            'current_page' => 1,
+            'last_page' => 1,
+        ];
         // check if role "player" exists
-        if (!$playerRole) {
-            return response()->json([
-                'response' => [
-                    'status_title' => 'Error',
-                    'status_message' => 'Role not found !',
-                    'status_code' => 404,
-                ]
-            ], 404);
+        if ($playerRole) {
+            $joinedBoardsQuery = $user->boards()->wherePivot('role_id', $playerRole->id)->withCount('users');
+            $boardsJoinedPaginator = $joinedBoardsQuery->paginate($perPage, ['*'], 'joined_page');
+            $boardsJoined = $boardsJoinedPaginator->items();
+            $metaJoinedBoards = [
+                'total' => $boardsJoinedPaginator->total(),
+                'per_page' => $boardsJoinedPaginator->perPage(),
+                'current_page' => $boardsJoinedPaginator->currentPage(),
+                'last_page' => $boardsJoinedPaginator->lastPage(),
+            ];
         }
-
-        $createdBoardsQuery = $user->boards()->wherePivot('role_id', $masterRole->id)->withCount('users');
-        $boardsCreated = $createdBoardsQuery->paginate($perPage, ['*'], 'created_page');
-
-        $joinedBoardsQuery = $user->boards()->wherePivot('role_id', $playerRole->id)->withCount('users');
-        $boardsJoined = $joinedBoardsQuery->paginate($perPage, ['*'], 'joined_page');
 
         // Response
         return response()->json([
             'meta' => [
-                'created_boards' => [
-                    'total' => $boardsCreated->total(),
-                    'per_page' => $boardsCreated->perPage(),
-                    'current_page' => $boardsCreated->currentPage(),
-                    'last_page' => $boardsCreated->lastPage(),
-                ],
-                'joined_boards' => [
-                    'total' => $boardsJoined->total(),
-                    'per_page' => $boardsJoined->perPage(),
-                    'current_page' => $boardsJoined->currentPage(),
-                    'last_page' => $boardsJoined->lastPage(),
-                ],
+                'created_boards' => $metaCreatedBoards,
+                'joined_boards' => $metaJoinedBoards,
             ],
             'data' => [
-                'created_boards' => $boardsCreated->items(),
-                'joined_boards' => $boardsJoined->items(),
+                'created_boards' => $boardsCreated,
+                'joined_boards' => $boardsJoined,
             ],
         ]);
 

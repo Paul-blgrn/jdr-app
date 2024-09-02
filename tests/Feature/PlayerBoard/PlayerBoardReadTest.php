@@ -83,6 +83,7 @@ it('paginate boards', function () {
 it('displays all the user boards and does not send back other players boards', function () {
     // Create one user and associate 3 Boards with him
     $user = User::factory()->create();
+    $user2 = User::factory()->create();
     $boards = Board::factory(3)->create();
 
     // Create roles
@@ -117,6 +118,12 @@ it('displays all the user boards and does not send back other players boards', f
                 'current_page',
                 'last_page',
             ],
+            'joined_boards' => [
+                'total',
+                'per_page',
+                'current_page',
+                'last_page',
+            ],
         ],
         'data' => [
             'created_boards' => [
@@ -135,7 +142,8 @@ it('displays all the user boards and does not send back other players boards', f
                         'role_id',
                     ],
                 ],
-            ]
+            ],
+            'joined_boards' => [],
         ],
     ]);
 
