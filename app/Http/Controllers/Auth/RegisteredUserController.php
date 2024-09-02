@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rules\Password;
 
 class RegisteredUserController extends Controller
 {
@@ -23,9 +24,19 @@ class RegisteredUserController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:60'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+                    // disable temporary "uncompromised" because we are not yet in prod (no ssl)
+                    //->uncompromised(),
+            ]
         ]);
 
         $user = User::create([
@@ -66,13 +77,13 @@ class RegisteredUserController extends Controller
             ], 404);
         }
 
+        // Attach role "user" to the user
         $user->roles()->attach($userRole->id);
 
-        //return response()->noContent();
         return response()->json([
             'message' => 'Registration successful',
             'user' => $userData,
             'token' => $token,
-        ]);
+        ], 200);
     }
 }
