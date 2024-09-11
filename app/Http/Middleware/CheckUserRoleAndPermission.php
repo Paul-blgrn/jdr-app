@@ -29,7 +29,7 @@ class CheckUserRoleAndPermission
             if (!$findBoard) {
                 return $this->returnError(
                     'Not found',
-                    'Board not found.',
+                    'Board not found or user not associated with this board.',
                     404
                 );
             }

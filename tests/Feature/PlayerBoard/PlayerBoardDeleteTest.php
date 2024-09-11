@@ -169,7 +169,7 @@ it('returns 404 if board that user try to leave does not exist', function () {
     $response->assertJson([
         'response' => [
             'status_title' => 'Not found',
-            'status_message' => 'Board not found.',
+            'status_message' => 'Board not found or user not associated with this board.',
             'status_code' => 404,
         ]
     ]);
@@ -266,7 +266,7 @@ it('cannot leave a board if user is not a member', function () {
     $response->assertJson([
         'response' => [
             'status_title' => 'Not found',
-            'status_message' => 'Board not found.',
+            'status_message' => 'Board not found or user not associated with this board.',
             'status_code' => 404,
         ]
     ]);
