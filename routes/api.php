@@ -30,7 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware(CheckUserRoleAndPermission::class . ':user');
 
     // Leave a Board
-    Route::delete('/board/{board}/leave', [PlayerBoardController::class,'destroy']);
+    Route::delete('/board/{board}/leave', [PlayerBoardController::class,'destroy'])
+        ->middleware([CheckUserRoleAndPermission::class . ':player']);
 
     // -----------------
     // Board Controller

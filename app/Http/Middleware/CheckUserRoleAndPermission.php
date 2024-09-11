@@ -23,24 +23,37 @@ class CheckUserRoleAndPermission
         $boardId = $board instanceof Board ? $board->id : $board;
 
         if ($boardId) {
-            // Verify board roles
-            $boardUserRole = $user->boards()
-                                ->where('board_id', $boardId)
-                                ->first()?->pivot->role_id;
+            // get the board in database
+            $findBoard = $user->boards()->where('board_id', $boardId)->first();
+            // check if board exist
+            if (!$findBoard) {
+                return $this->returnError(
+                    'Not found',
+                    'Board not found.',
+                    404
+                );
+            }
 
+            // get the user role
+            $boardUserRole = $findBoard->pivot->role_id;
+
+            // check if user have role on board
             if (!$boardUserRole) {
-                return $this->forbiddenResponse(
-                    'You do not have a role on this board.'
+                return $this->returnError(
+                    'Forbidden',
+                    'You do not have a role on this board.',
+                    403,
                 );
             }
 
             $role = Role::find($boardUserRole);
 
             if (!$role || !in_array(strtolower($role->name), $roles)) {
-                return $this
-                    ->forbiddenResponse(
-                    'You do not have the required board role.'
-                    );
+                return $this->returnError(
+                    'Forbidden',
+                    'You do not have the required board role.',
+                    403,
+                );
             }
 
             $permissions = $role->permissions->pluck('name')->toArray();
@@ -62,8 +75,10 @@ class CheckUserRoleAndPermission
             $role = $user->roles()->whereIn('name', $roles)->first();
 
             if (!$role) {
-                return $this->forbiddenResponse(
-                    'You do not have one of the required global roles.'
+                return $this->returnError(
+                    'Forbidden',
+                    'You do not have one of the required global roles.',
+                    403,
                 );
             }
 
@@ -81,9 +96,11 @@ class CheckUserRoleAndPermission
             }
         }
 
-        return $this->forbiddenResponse(
-            'Your role does not have the required permissions.'
-        );
+            return $this->returnError(
+                'Forbidden',
+                'Your role does not have the required permissions.',
+                403,
+            );
     }
 
     protected function checkPolicyPermissions(
@@ -118,8 +135,11 @@ class CheckUserRoleAndPermission
                     }
                 }
             } else {
-                return $this->forbiddenResponse(
-                    'Policy Class or Method Name nor found.'
+
+                return $this->returnError(
+                    'Forbidden',
+                    'Policy Class or Method Name nor found.',
+                    403,
                 );
             }
         }
@@ -151,16 +171,15 @@ class CheckUserRoleAndPermission
     {
         return Gate::getPolicyFor($modelClass);
     }
-    
-    protected function forbiddenResponse($message)
-    {
+
+    protected function returnError($title, $message, $status) {
         return response()->json([
             'response' => [
-                'status_code' => 403,
-                'status_title' => 'Forbidden',
+                'status_code' => $status,
+                'status_title' => $title,
                 'status_message' => $message,
             ],
-        ], 403);
+        ], $status);
     }
 
 }

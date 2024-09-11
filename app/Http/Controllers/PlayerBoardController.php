@@ -167,7 +167,7 @@ class PlayerBoardController extends Controller
         // Obtenir l'utilisateur authentifié
         $user = auth()->user();
         // Récupérer le board de l'utilisateur avec les informations des utilisateurs associés
-        $board = $user->boards()->with('users')->findOrFail($board->id);
+        $board = $user->boards()->with('users')->withCount('users')->findOrFail($board->id);
         // Retourner le board au format JSON
         return $board->toJson();
     }
@@ -206,17 +206,17 @@ class PlayerBoardController extends Controller
 
         // Regarder dans la liste des joueurs présent dans la board
         // si l'utilisateur connecté est présent
-        if (!$foundUser) {
-            // Retourner une réponse indiquant que l'utilisateur
-            // n'est pas dans la liste des joueurs inscrits dans la board
-            return response()->json([
-                'response' => [
-                    'status_title' => 'No permission',
-                    'status_message' => 'The user cannot leave a board if they are not a member.',
-                    'status_code' => 403,
-                ]
-            ], 403);
-        }
+        // if (!$foundUser) {
+        //     // Retourner une réponse indiquant que l'utilisateur
+        //     // n'est pas dans la liste des joueurs inscrits dans la board
+        //     return response()->json([
+        //         'response' => [
+        //             'status_title' => 'No permission',
+        //             'status_message' => 'The user cannot leave a board if they are not a member.',
+        //             'status_code' => 403,
+        //         ]
+        //     ], 403);
+        // }
 
         $UserRoleID = $foundUser->pivot->role_id;
         $role = Role::where('id', $UserRoleID)->first();

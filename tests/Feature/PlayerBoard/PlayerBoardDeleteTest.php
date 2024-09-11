@@ -160,9 +160,28 @@ it('returns 404 if board that user try to leave does not exist', function () {
     $invalidBoardId = 9999;
 
     // simulate an user trying to leave a non-existent board
-    $this->actingAs($user)
-        ->delete("/api/board/{$invalidBoardId}/leave")
-        ->assertStatus(404);
+    $response = $this->actingAs($user)
+        ->delete("/api/board/{$invalidBoardId}/leave");
+
+    $response->assertStatus(404);
+
+    // Check JSON response content
+    $response->assertJson([
+        'response' => [
+            'status_title' => 'Not found',
+            'status_message' => 'Board not found.',
+            'status_code' => 404,
+        ]
+    ]);
+
+    // Check JSON response structure
+    $response->assertJsonStructure([
+        'response' => [
+            'status_title',
+            'status_message',
+            'status_code',
+        ]
+    ]);
 });
 
 it('cannot leave a board if it will be empty', function () {
@@ -239,15 +258,16 @@ it('cannot leave a board if user is not a member', function () {
 
     // simulate an user trying to leave a board which it's not a member
     $response = $this->actingAs($notAMember)
-        ->delete("/api/board/{$board->id}/leave")
-        ->assertStatus(403);
+        ->delete("/api/board/{$board->id}/leave");
+
+    $response->assertStatus(404);
 
     // Check JSON response content
     $response->assertJson([
         'response' => [
-            'status_title' => 'No permission',
-            'status_message' => 'The user cannot leave a board if they are not a member.',
-            'status_code' => 403,
+            'status_title' => 'Not found',
+            'status_message' => 'Board not found.',
+            'status_code' => 404,
         ]
     ]);
 
@@ -290,8 +310,8 @@ it('cannot leave a board if user have role master', function () {
     // Check JSON response content
     $response->assertJson([
         'response' => [
-            'status_title' => 'No permission',
-            'status_message' => 'The user with role Master cannot leave a board.',
+            'status_title' => 'Forbidden',
+            'status_message' => 'You do not have the required board role.',
             'status_code' => 403,
         ]
     ]);
