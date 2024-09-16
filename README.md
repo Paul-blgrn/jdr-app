@@ -1,8 +1,14 @@
 # The Project
 <p align="center">Coming soon...</p>
 
+## Statut des Tests
+- ![Tests Passed](https://img.shields.io/badge/tests_passed-297-brightgreen?style=flat-square)
+- ![Tests Skipped](https://img.shields.io/badge/tests_skipped-72-lightgrey?style=flat-square)
+- ![Tests Failed](https://img.shields.io/badge/tests_failed-0-red?style=flat-square)
+
 # Entity Relation Diagramm (ERD)
-![bdd_schema](https://github.com/Paul-blgrn/jdr-app/assets/128799831/d3e3114f-2e82-44b6-bfc5-773e2c8e2a46)
+![bdd_schema2](https://github.com/user-attachments/assets/03d4751f-e303-42cc-a28b-6ff6340557fc)
+
 
 <hr />
 

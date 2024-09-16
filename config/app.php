@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'middleware' => [
+        'check.role.permission' => \App\Http\Middleware\CheckUserRoleAndPermission::class,
+        'cors' => \App\Http\Middleware\CorsMiddleware::class,
+    ],
 ];
