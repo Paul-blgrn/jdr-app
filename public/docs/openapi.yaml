@@ -1,0 +1,301 @@
+openapi: 3.0.3
+info:
+  title: Laravel
+  description: ''
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost:8000'
+paths:
+  /api/user:
+    get:
+      summary: ''
+      operationId: getApiUser
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+  /api/boards:
+    get:
+      summary: 'Display a listing of the resource.'
+      operationId: displayAListingOfTheResource
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+  '/api/board/{board_id}':
+    get:
+      summary: 'Display the specified resource.'
+      operationId: displayTheSpecifiedResource
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: board_id
+        description: 'The ID of the board.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  /api/boards/join:
+    post:
+      summary: 'Store a newly created resource in storage.'
+      operationId: storeANewlyCreatedResourceInStorage
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: ''
+                  example: molestiae
+                  nullable: false
+              required:
+                - code
+      security: []
+  '/api/board/{board}/leave':
+    delete:
+      summary: ''
+      operationId: deleteApiBoardBoardLeave
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: board
+        description: 'The board.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  /api/boards/add:
+    post:
+      summary: 'Store a newly created board in storage.'
+      operationId: storeANewlyCreatedBoardInStorage
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must be at least 10 characters. Must not be greater than 40 characters.'
+                  example: dcwnxxrugnexuxem
+                  nullable: false
+                description:
+                  type: string
+                  description: 'Must be at least 20 characters. Must not be greater than 70 characters.'
+                  example: 'Consectetur perspiciatis est ipsam illum.'
+                  nullable: false
+                capacity:
+                  type: integer
+                  description: 'Must be at least 2. Must not be greater than 20.'
+                  example: 19
+                  nullable: false
+              required:
+                - name
+                - description
+                - capacity
+      security: []
+  '/api/board/{board}/update':
+    put:
+      summary: 'Update the specified board in storage.'
+      operationId: updateTheSpecifiedBoardInStorage
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must be at least 10 characters. Must not be greater than 40 characters.'
+                  example: wghfkwudq
+                  nullable: false
+                description:
+                  type: string
+                  description: 'Must be at least 20 characters. Must not be greater than 70 characters.'
+                  example: 'Optio non voluptas et quas sequi et est.'
+                  nullable: false
+                capacity:
+                  type: integer
+                  description: 'Must be at least 2. Must not be greater than 20.'
+                  example: 16
+                  nullable: false
+              required:
+                - name
+                - description
+                - capacity
+      security: []
+    parameters:
+      -
+        in: path
+        name: board
+        description: 'The board.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  '/api/board/{board}/delete':
+    delete:
+      summary: ''
+      operationId: deleteApiBoardBoardDelete
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: board
+        description: 'The board.'
+        example: 3
+        required: true
+        schema:
+          type: integer
+  /api/templates:
+    get:
+      summary: ''
+      operationId: getApiTemplates
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: Unauthenticated.
+                properties:
+                  message:
+                    type: string
+                    example: Unauthenticated.
+      tags:
+        - Endpoints
+      security: []
+  /api/templates/add:
+    post:
+      summary: ''
+      operationId: postApiTemplatesAdd
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: ''
+                  example: commodi
+                  nullable: false
+                content:
+                  type: string
+                  description: 'Must be a valid JSON string.'
+                  example: '["ad","est"]'
+                  nullable: false
+                default:
+                  type: boolean
+                  description: ''
+                  example: true
+                  nullable: false
+                type:
+                  type: string
+                  description: ''
+                  example: inventaire
+                  nullable: false
+                  enum:
+                    - personnage
+                    - inventaire
+                    - competences
+                    - note
+                    - autres
+              required:
+                - name
+                - content
+                - default
+                - type
+      security: []
+tags:
+  -
+    name: Endpoints
+    description: ''
