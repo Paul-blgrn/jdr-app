@@ -19,7 +19,7 @@ class CorsMiddleware
     {
         if ($request->isMethod('OPTIONS')) {
             // Handling preflight requests
-            return response('', 204)
+            return response([], 204)
                 ->header('Access-Control-Allow-Origin', implode(',', config('cors.allowed_origins')))
                 ->header('Access-Control-Allow-Methods', implode(',', config('cors.allowed_methods')))
                 ->header('Access-Control-Allow-Headers', implode(',', config('cors.allowed_headers')))

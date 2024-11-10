@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CorsMiddleware::class,
+            \App\Http\Middleware\LogRequests::class,
         ]);
 
         $middleware->web(prepend: [
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \App\Http\Middleware\CorsMiddleware::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\LogRequests::class,
             // \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             // \Illuminate\Cookie\Middleware\EncryptCookies::class,

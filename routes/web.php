@@ -11,8 +11,9 @@ Route::get('/', function () {
 });
 
 Route::options('/{any}', function () {
-    return response()->json(['message' => 'Preflight Request']);
+    return response()->json(['message' => 'Preflight Request'], 204);
 })->where('any', '.*')->middleware(\Illuminate\Http\Middleware\HandleCors::class);
+
 
 // Route::post('/sanctum/token', function (Request $request) {
 //     $request->validate([
