@@ -11,7 +11,7 @@ test('users can authenticate using the login screen', function () {
     withoutExceptionHandling();
     $user = User::factory()->create();
 
-    $response = $this->post('/login', [
+    $response = $this->post('/auth/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -33,7 +33,7 @@ test('users can authenticate using the login screen', function () {
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', [
+    $this->post('/auth/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
@@ -44,7 +44,7 @@ test('users can not authenticate with invalid password', function () {
 test('users can logout', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post('/logout');
+    $response = $this->actingAs($user)->post('/auth/logout');
 
     $this->assertGuest();
     $response->assertStatus(200);
@@ -63,7 +63,7 @@ it('create an authentication token when login', function () {
     ]);
 
     // Loggin in as Test user
-    $response = $this->postJson('/login', [
+    $response = $this->postJson('/auth/login', [
         'email' => 'test@example.com',
         'password' => 'Str0ngP@ssw0rd!',
     ]);
@@ -98,7 +98,7 @@ it('deletes the current token on logout', function () {
     $this->assertNotEmpty($user->tokens);
 
     // Disconnect the user
-    $response = $this->actingAs($user)->postJson('/logout');
+    $response = $this->actingAs($user)->postJson('/auth/logout');
 
     // Check if token is deleted
     $this->assertEmpty($user->fresh()->tokens);
@@ -126,7 +126,7 @@ it('deletes all user tokens on logout', function () {
     $this->assertCount(3, $user->tokens);
 
     // Disconnect the user
-    $response = $this->actingAs($user)->postJson('/logout');
+    $response = $this->actingAs($user)->postJson('/auth/logout');
 
     // Check if tokens are deleted
     $this->assertEmpty($user->fresh()->tokens);
