@@ -8,7 +8,7 @@ use Laravel\Sanctum\Sanctum;
 
 test('new users can register', function () {
     Role::factory()->create(['name' => 'user']);
-    $response = $this->post('/register', [
+    $response = $this->post('/auth/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'Str0ngP@ssw0rd!',
@@ -20,7 +20,7 @@ test('new users can register', function () {
 });
 
 it('fails to register with a weak password', function () {
-    $response = $this->postJson('/register', [
+    $response = $this->postJson('/auth/register', [
         'name' => 'Test User',
         'email' => 'testuser@example.com',
         'password' => 'weakpass',
@@ -33,7 +33,7 @@ it('fails to register with a weak password', function () {
 
 it('registers a user with a strong password', function () {
     Role::factory()->create(['name' => 'user']);
-    $response = $this->postJson('register', [
+    $response = $this->postJson('/auth/register', [
         'name' => 'Test User',
         'email' => 'testuser@example.com',
         'password' => 'Str0ngP@ssw0rd!',
@@ -60,7 +60,7 @@ it('registers a user and assign the user a role with a token', function () {
 
     Role::factory()->create(['name' => 'user']);
 
-    $response = $this->post('/register', [
+    $response = $this->post('/auth/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'Str0ngP@ssw0rd!',

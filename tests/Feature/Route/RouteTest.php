@@ -6,7 +6,7 @@ it('show homepage', function () {
 });
 
 it('show login page', function () {
-    $this->post('/login')
+    $this->post('/auth/login')
     ->assertStatus(302);
 });
 
